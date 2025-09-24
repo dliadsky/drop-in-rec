@@ -119,6 +119,35 @@ const SearchForm: React.FC<SearchFormProps> = ({
     }
   }, [filters, onFiltersChange, onSearch]);
 
+  const handleClearField = React.useCallback((field: keyof typeof searchInputs) => {
+    // Clear the field
+    setSearchInputs(prev => ({ ...prev, [field]: '' }));
+    
+    // Hide the dropdown
+    if (field === 'program') {
+      setShowProgramDropdown(false);
+    } else if (field === 'location') {
+      setShowLocationDropdown(false);
+    }
+    
+    // Update filters and trigger search
+    const newFilters = { ...filters };
+    if (field === 'program') {
+      newFilters.courseTitle = '';
+    } else if (field === 'location') {
+      newFilters.location = '';
+    }
+    
+    onFiltersChange(newFilters);
+    onSearch(newFilters);
+    
+    // Remove focus from the input field
+    const inputElement = document.querySelector(`input[placeholder="${field === 'program' ? 'Find a program' : 'Search by location'}"]`) as HTMLInputElement;
+    if (inputElement) {
+      inputElement.blur();
+    }
+  }, [filters, onFiltersChange, onSearch]);
+
   const handleOptionSelect = React.useCallback((field: keyof typeof searchInputs, value: string) => {
     setSearchInputs(prev => ({ ...prev, [field]: value }));
     
@@ -467,7 +496,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
           {searchInputs.program && (
             <button 
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              onClick={() => handleSearchInputChange('program', '')}
+              onClick={() => handleClearField('program')}
             >
               <span className="material-symbols-outlined text-xl"> close </span>
             </button>
@@ -505,7 +534,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
           {searchInputs.location && (
             <button 
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              onClick={() => handleSearchInputChange('location', '')}
+              onClick={() => handleClearField('location')}
             >
               <span className="material-symbols-outlined text-xl"> close </span>
             </button>

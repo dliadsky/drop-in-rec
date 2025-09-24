@@ -37,7 +37,7 @@ export const categories: Category[] = [
       { id: 'family-swim', name: 'Family Swim', keywords: ['family swim'  ], icon: 'pool' },
       { id: 'family-sports', name: 'Family Sports', keywords: ['basketball with family', 'badminton with family', 'pickleball with family', 'soccer with family', 'volleyball with family', 'tennis with family', 'table-tennis with family', 'skate with family', 'multi-sport with family'], icon: 'family_restroom' },
       { id: 'family-arts', name: 'Family Arts', keywords: ['family arts'], icon: 'palette' },
-      { id: 'early-years', name: 'Early Years', keywords: ['early years', 'preschool'], icon: 'child_care' },
+      { id: 'early-years', name: 'Early Years', keywords: ['early years', 'preschool', 'caregiver'], icon: 'child_care' },
       { id: 'other-family-programs', name: 'Other Family Programs', keywords: ['family'], isFallback: true, icon: 'family_restroom' }
     ]
   },
@@ -117,7 +117,7 @@ export const categories: Category[] = [
     subcategories: [
       { id: 'lane-swim', name: 'Lane Swim', keywords: ['lane swim'], icon: 'pool' },
       { id: 'leisure-swim', name: 'Leisure Swim', keywords: ['leisure swim'], icon: 'pool' },
-      { id: 'family-swim', name: 'Family Swim', keywords: ['family swim', 'family', 'caregiver'], icon: 'pool' },
+      { id: 'family-swim', name: 'Family Swim', keywords: ['family swim'], icon: 'pool' },
       { id: 'aquatic-fitness', name: 'Aquatic Fitness', keywords: ['aquatic fitness', 'water fitness', 'water'], icon: 'pool' },
       { id: 'other-swimming', name: 'Other Swimming', keywords: ['swim', 'aquatic'], isFallback: true, icon: 'pool' }
     ]

@@ -63,7 +63,7 @@ button:focus-visible {
 }
 
 .maplibregl-popup {
-  max-width: 360px;
+  max-width: 280px !important;
 }
 
 .maplibregl-popup-close-button {
@@ -81,4 +81,5 @@ button:focus-visible {
 
 .maplibregl-popup-content a:hover {
   color: #ffffff;
+  background-color: #13a4ec;
 }
