@@ -59,11 +59,24 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, hasSe
     const sorted = [...results].sort((a, b) => {
       switch (sortOrder) {
         case 'alphabetical':
-          return a.location.localeCompare(b.location);
+          // Primary: location, Secondary: program name
+          const locationCompare = a.location.localeCompare(b.location);
+          if (locationCompare !== 0) return locationCompare;
+          return a.courseTitle.localeCompare(b.courseTitle);
         case 'earliest':
-          return a.startTime.localeCompare(b.startTime);
+          // Primary: start time, Secondary: location, Tertiary: program name
+          const startTimeCompare = a.startTime.localeCompare(b.startTime);
+          if (startTimeCompare !== 0) return startTimeCompare;
+          const earliestLocationCompare = a.location.localeCompare(b.location);
+          if (earliestLocationCompare !== 0) return earliestLocationCompare;
+          return a.courseTitle.localeCompare(b.courseTitle);
         case 'latest':
-          return b.endTime.localeCompare(a.endTime);
+          // Primary: end time, Secondary: location, Tertiary: program name
+          const endTimeCompare = b.endTime.localeCompare(a.endTime);
+          if (endTimeCompare !== 0) return endTimeCompare;
+          const latestLocationCompare = a.location.localeCompare(b.location);
+          if (latestLocationCompare !== 0) return latestLocationCompare;
+          return a.courseTitle.localeCompare(b.courseTitle);
         default:
           return 0;
       }
@@ -137,10 +150,15 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, hasSe
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-3 pr-2" style={{ maxHeight: 'calc(100vh - 280px)' }}>
-        {sortedResults.map((result, index) => (
+        {sortedResults.map((result, index) => {
+          // Find the first occurrence of the selected location
+          const isFirstOccurrence = selectedLocation === result.location && 
+            sortedResults.findIndex(r => r.location === selectedLocation) === index;
+          
+          return (
           <div 
             key={index} 
-            ref={selectedLocation === result.location ? selectedCardRef : null}
+            ref={isFirstOccurrence ? selectedCardRef : null}
             className={`border rounded-lg p-3 hover:shadow-md transition-all duration-200 cursor-pointer ${
               selectedLocation === result.location 
                 ? 'border-blue-500 bg-blue-50 shadow-md' 
@@ -177,7 +195,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, hasSe
             <div className="mt-3 flex flex-wrap gap-1">
               {result.locationAddress && (
                  <a
-                      href={result.locationURL}
+                      href={result.locationURL || undefined}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center px-2 py-1 text-xs font-medium text-orange-600 bg-orange-50 rounded hover:bg-orange-100 transition-colors"
@@ -208,7 +226,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, hasSe
               )}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
