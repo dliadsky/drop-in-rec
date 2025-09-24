@@ -139,7 +139,7 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
           .setPopup(
             new (window as any).maplibregl.Popup().setHTML(`
               <div class="p-2">
-                <h3 class="font-semibold text-base text-gray-900">${location.name}</h3>
+                <h3 class="font-semibold text-base text-slate-800">${location.name}</h3>
                 ${location.address ? `<p class="mt-1 text-sm text-slate-500 whitespace-pre-line">${location.address}</p>` : ''}
                 ${location.url ? `
                   <a class="p-1 mt-4 inline-flex items-center justify-center line-height-1 w-full bg-[#13a4ec]/10 text-gray text-sm font-medium px-4 rounded-lg hover:text-black hover:bg-[#13a4ec]/1 hover:shadow-lg hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#13a4ec] focus:ring-offset-2 transition-all duration-200 ease-in-out" href="${location.url}" target="_blank" rel="noopener noreferrer">
@@ -260,7 +260,7 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
     <div className="w-full h-full relative">
       {/* Header positioned absolutely over the map */}
       <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-800">
+        <h3 className="text-base font-semibold text-gray-800">
           Locations ({locations.length})
         </h3>
       </div>

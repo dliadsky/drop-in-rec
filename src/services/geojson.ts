@@ -29,7 +29,7 @@ export interface GeoJSONData {
 // Load GeoJSON data from the public folder
 export const loadGeoJSONData = async (): Promise<GeoJSONData> => {
   try {
-    const response = await fetch('/Parks and Recreation Facilities - 4326.geojson');
+    const response = await fetch('./Parks and Recreation Facilities - 4326.geojson');
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

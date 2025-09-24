@@ -37,7 +37,7 @@ interface DropInRecord {
 // Load data from local JSON files
 export const loadLocations = async (): Promise<Location[]> => {
   try {
-    const response = await fetch('/Locations.json');
+    const response = await fetch('./Locations.json');
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -52,7 +52,7 @@ export const loadLocations = async (): Promise<Location[]> => {
 
 export const loadDropIns = async (): Promise<DropInRecord[]> => {
   try {
-    const response = await fetch('/Drop-in.json');
+    const response = await fetch('./Drop-in.json');
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -70,65 +70,91 @@ const getMockData = (): { locations: Location[], dropIns: DropInRecord[] } => {
   const mockDropIns: DropInRecord[] = [
     {
       _id: 1,
-      Course_Title: "Lane Swim",
-      Location: "Toronto Pan Am Sports Centre",
-      Day_of_Week: "Monday",
-      Start_Time: "6:00 AM",
-      End_Time: "8:00 AM"
+      "Location ID": 1,
+      "Course_ID": 1,
+      "Course Title": "Lane Swim",
+      "Section": "A",
+      "Age Min": "18",
+      "Age Max": "99",
+      "Date Range": "2024-01-01 to 2024-12-31",
+      "Start Hour": 6,
+      "Start Minute": 0,
+      "End Hour": 8,
+      "End Min": 0,
+      "First Date": "2024-01-01",
+      "Last Date": "2024-12-31"
     },
     {
       _id: 2,
-      Course_Title: "Lane Swim",
-      Location: "Toronto Pan Am Sports Centre",
-      Day_of_Week: "Tuesday",
-      Start_Time: "5:00 PM",
-      End_Time: "7:00 PM"
+      "Location ID": 1,
+      "Course_ID": 2,
+      "Course Title": "Lane Swim",
+      "Section": "B",
+      "Age Min": "18",
+      "Age Max": "99",
+      "Date Range": "2024-01-01 to 2024-12-31",
+      "Start Hour": 17,
+      "Start Minute": 0,
+      "End Hour": 19,
+      "End Min": 0,
+      "First Date": "2024-01-01",
+      "Last Date": "2024-12-31"
     },
     {
       _id: 3,
-      Course_Title: "Basketball",
-      Location: "Regent Park Community Centre",
-      Day_of_Week: "Wednesday",
-      Start_Time: "7:00 PM",
-      End_Time: "9:00 PM"
-    },
-    {
-      _id: 4,
-      Course_Title: "Lane Swim",
-      Location: "Regent Park Community Centre",
-      Day_of_Week: "Thursday",
-      Start_Time: "6:30 AM",
-      End_Time: "8:30 AM"
-    },
-    {
-      _id: 5,
-      Course_Title: "Fitness Class",
-      Location: "Toronto Pan Am Sports Centre",
-      Day_of_Week: "Friday",
-      Start_Time: "6:00 PM",
-      End_Time: "7:00 PM"
-    },
-    {
-      _id: 6,
-      Course_Title: "Lane Swim",
-      Location: "Regent Park Community Centre",
-      Day_of_Week: "Saturday",
-      Start_Time: "10:00 AM",
-      End_Time: "12:00 PM"
-    },
-    {
-      _id: 7,
-      Course_Title: "Basketball",
-      Location: "Toronto Pan Am Sports Centre",
-      Day_of_Week: "Sunday",
-      Start_Time: "2:00 PM",
-      End_Time: "4:00 PM"
+      "Location ID": 2,
+      "Course_ID": 3,
+      "Course Title": "Basketball",
+      "Section": "A",
+      "Age Min": "16",
+      "Age Max": "99",
+      "Date Range": "2024-01-01 to 2024-12-31",
+      "Start Hour": 19,
+      "Start Minute": 0,
+      "End Hour": 21,
+      "End Min": 0,
+      "First Date": "2024-01-01",
+      "Last Date": "2024-12-31"
     }
   ];
 
   const mockLocations: Location[] = [
-    { _id: 1, name: "Toronto Pan Am Sports Centre" },
-    { _id: 2, name: "Regent Park Community Centre" }
+    {
+      _id: 1,
+      "Location ID": 1,
+      "Parent Location ID": 0,
+      "Location Name": "Toronto Pan Am Sports Centre",
+      "Location Type": "Community Centre",
+      "Accessibility": "Fully Accessible",
+      "Intersection": "Morningside Ave & Ellesmere Rd",
+      "TTC Information": "TTC Bus 102",
+      "District": "Scarborough",
+      "Street No": "875",
+      "Street No Suffix": "",
+      "Street Name": "Morningside",
+      "Street Type": "Ave",
+      "Street Direction": "",
+      "Postal Code": "M1C 5N9",
+      "Description": "Multi-purpose sports facility"
+    },
+    {
+      _id: 2,
+      "Location ID": 2,
+      "Parent Location ID": 0,
+      "Location Name": "Regent Park Community Centre",
+      "Location Type": "Community Centre",
+      "Accessibility": "Fully Accessible",
+      "Intersection": "Dundas St E & Parliament St",
+      "TTC Information": "TTC Streetcar 505",
+      "District": "Toronto East York",
+      "Street No": "402",
+      "Street No Suffix": "",
+      "Street Name": "Shuter",
+      "Street Type": "St",
+      "Street Direction": "",
+      "Postal Code": "M5A 1X6",
+      "Description": "Community recreation centre"
+    }
   ];
 
   return { locations: mockLocations, dropIns: mockDropIns };

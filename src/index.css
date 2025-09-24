@@ -62,6 +62,17 @@ button:focus-visible {
   will-change: transform; /* optional: helps compositing */
 }
 
+.maplibregl-map {
+  font-family: "Public Sans", system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  background-color: #242424;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
 .maplibregl-popup {
   max-width: 280px !important;
 }
