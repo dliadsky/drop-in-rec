@@ -22,13 +22,13 @@ jobs:
         run: npm install
 
       - name: Run geojson data download script
-        run: node scripts/download-geojson.js
+        run: node scripts/download-geojson.cjs
 
       - name: Run location data download script
-        run: node scripts/download-locations.js
+        run: node scripts/download-locations.cjs
 
       - name: Run drop-in data download script
-        run: node scripts/download-drop-in.js
+        run: node scripts/download-drop-in.cjs
 
       - name: Commit and push changes
         run: |
