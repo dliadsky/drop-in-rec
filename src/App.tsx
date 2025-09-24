@@ -53,6 +53,8 @@ interface SearchResult {
   date: string;
   locationURL?: string | null;
   locationAddress?: string | null;
+  category?: string;
+  subcategory?: string;
 }
 
 interface Location {
@@ -104,9 +106,7 @@ function App() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const [courseTitles, setCourseTitles] = useState<string[]>([]);
   const [allCourseTitles, setAllCourseTitles] = useState<string[]>([]);
-  const [locations, setLocations] = useState<string[]>([]);
   const [allDropIns, setAllDropIns] = useState<DropInRecord[]>([]);
   const [allLocations, setAllLocations] = useState<Location[]>([]);
   const [locationURLMap, setLocationURLMap] = useState<Map<string, string>>(new Map());
@@ -135,9 +135,6 @@ function App() {
         // Extract unique course titles and locations
         const uniqueCourseTitles = [...new Set(dropIns.map(d => d["Course Title"]).filter(Boolean))].sort();
         
-        // Get unique location names by matching Location ID with locations data
-        const locationMap = new Map(locations.map(loc => [loc["Location ID"], loc["Location Name"]]));
-        const uniqueLocationNames = [...new Set(dropIns.map(d => locationMap.get(d["Location ID"])).filter(Boolean))].sort() as string[];
         
         // Create URL, address, and coordinates maps from GeoJSON data
         const urlMap = createLocationURLMap(geoJSONData);
@@ -154,9 +151,7 @@ function App() {
         });
         
         
-        setCourseTitles(uniqueCourseTitles);
         setAllCourseTitles(uniqueCourseTitles);
-        setLocations(uniqueLocationNames);
         setAllDropIns(dropIns);
         setAllLocations(locations);
         setLocationURLMap(urlMap);
@@ -174,28 +169,6 @@ function App() {
   }, []);
 
   // Filter course titles based on selected category and subcategory
-  useEffect(() => {
-    if (filters.category) {
-      // When a specific category is selected, filter by that category and subcategory
-      const filteredTitles = getCourseTitlesForCategory(
-        allCourseTitles,
-        filters.category,
-        filters.subcategory // Pass the actual subcategory value (empty string means "all subcategories")
-      );
-      setCourseTitles(filteredTitles);
-    } else if (filters.subcategory) {
-      // When no category is selected but a subcategory is, filter by that subcategory across all categories
-      const filteredTitles = allCourseTitles.filter(title => {
-        // Check if this title matches the selected subcategory in any category
-        const categorizations = categorizeCourse(title);
-        return categorizations.some(cat => cat.subcategory === filters.subcategory);
-      });
-      setCourseTitles(filteredTitles);
-    } else {
-      // Show all course titles when neither category nor subcategory is selected
-      setCourseTitles(allCourseTitles);
-    }
-  }, [filters.category, filters.subcategory, allCourseTitles]);
 
   const clearSearchResults = () => {
     setResults([]);
@@ -206,12 +179,17 @@ function App() {
   };
 
   const handleLocationSelect = (location: string) => {
-    setSelectedLocation(location);
+    // Toggle selection: if clicking the same location, deselect it
+    const newSelectedLocation = selectedLocation === location ? undefined : location;
+    setSelectedLocation(newSelectedLocation);
+    
+    // Trigger search refresh when location selection changes
+    performSearch();
   };
 
   // Extract unique locations with coordinates for the map
   const mapLocations = React.useMemo(() => {
-    const uniqueLocations = new Map<string, { name: string; lat: number; lng: number; address?: string }>();
+    const uniqueLocations = new Map<string, { name: string; lat: number; lng: number; address?: string; url?: string }>();
     
     // Create a mapping from location name to location ID
     const locationNameToIdMap = new Map<string, string>();
@@ -227,11 +205,36 @@ function App() {
           const coords = locationCoordsMap.get(locationId);
           
           if (coords) {
+            // Find the location data from allLocations for address formatting
+            const locationData = allLocations.find(loc => loc["Location ID"].toString() === locationId);
+            
+            // Format address from Locations.json data
+            let formattedAddress = '';
+            if (locationData) {
+              const streetNo = locationData["Street No"] && locationData["Street No"] !== "None" ? locationData["Street No"] : '';
+              const streetNoSuffix = locationData["Street No Suffix"] && locationData["Street No Suffix"] !== "None" ? locationData["Street No Suffix"] : '';
+              const streetName = locationData["Street Name"] && locationData["Street Name"] !== "None" ? locationData["Street Name"] : '';
+              const streetType = locationData["Street Type"] && locationData["Street Type"] !== "None" ? locationData["Street Type"] : '';
+              const streetDirection = locationData["Street Direction"] && locationData["Street Direction"] !== "None" ? locationData["Street Direction"] : '';
+              const postalCode = locationData["Postal Code"] && locationData["Postal Code"] !== "None" ? locationData["Postal Code"] : '';
+              
+              // Format: {Street Number}{Street No Suffix} {Street Name} {Street Type} {Street Direction}
+              const streetAddress = [streetNo, streetNoSuffix, streetName, streetType, streetDirection]
+                .filter(part => part && part !== "None")
+                .join(' ');
+              
+              // Format: Toronto, ON  {Postal Code}
+              const cityLine = postalCode ? `Toronto, ON  ${postalCode}` : 'Toronto, ON';
+              
+              formattedAddress = streetAddress ? `${streetAddress}\n${cityLine}` : cityLine;
+            }
+            
             uniqueLocations.set(result.location, {
               name: result.location,
               lat: coords.lat,
               lng: coords.lng,
-              address: result.locationAddress || undefined
+              address: formattedAddress || undefined,
+              url: result.locationURL || undefined
             });
           }
         }
@@ -253,8 +256,10 @@ function App() {
     setLastResultCount(results.length);
   }, [results.length, lastResultCount]);
 
-  const performSearch = async () => {
-    if (!filters.date && !filters.courseTitle && !filters.location && !filters.time && !filters.category) {
+  const performSearch = async (searchFilters?: SearchFilters) => {
+    const currentFilters = searchFilters || filters;
+    
+    if (!currentFilters.date && !currentFilters.courseTitle && !currentFilters.location && !currentFilters.time && !currentFilters.category) {
       setResults([]);
       setHasSearched(true);
       return;
@@ -267,36 +272,37 @@ function App() {
       let filteredResults = allDropIns;
 
       // Filter by category/subcategory first
-      if (filters.category) {
+      if (currentFilters.category) {
         const categoryFilteredTitles = getCourseTitlesForCategory(
           allCourseTitles,
-          filters.category,
-          filters.subcategory // Pass the actual subcategory value (empty string means "all subcategories")
+          currentFilters.category,
+          currentFilters.subcategory // Pass the actual subcategory value (empty string means "all subcategories")
         );
+        
         
         filteredResults = filteredResults.filter(dropIn => 
           categoryFilteredTitles.includes(dropIn["Course Title"])
         );
-      } else if (filters.subcategory) {
+      } else if (currentFilters.subcategory) {
         // When no category is selected but a subcategory is, filter by that subcategory across all categories
         filteredResults = filteredResults.filter(dropIn => {
           const categorizations = categorizeCourse(dropIn["Course Title"]);
-          return categorizations.some(cat => cat.subcategory === filters.subcategory);
+          return categorizations.some(cat => cat.subcategory === currentFilters.subcategory);
         });
       }
 
       // Filter by specific course title (if selected)
-      if (filters.courseTitle) {
+      if (currentFilters.courseTitle) {
         filteredResults = filteredResults.filter(dropIn => 
-          dropIn["Course Title"] === filters.courseTitle
+          dropIn["Course Title"] === currentFilters.courseTitle
         );
       }
 
       // Filter by location
-      if (filters.location) {
+      if (currentFilters.location) {
         // Find the location ID for the selected location name
         const locationMap = new Map(allLocations.map(loc => [loc["Location Name"], loc["Location ID"]]));
-        const selectedLocationId = locationMap.get(filters.location);
+        const selectedLocationId = locationMap.get(currentFilters.location);
         
         if (selectedLocationId) {
           filteredResults = filteredResults.filter(dropIn => 
@@ -306,8 +312,8 @@ function App() {
       }
 
       // Filter by date (if date is provided)
-      if (filters.date) {
-        if (filters.date === 'this-week') {
+      if (currentFilters.date) {
+        if (currentFilters.date === 'this-week') {
           // For "This week", show results from all days in the next 7 days
           const today = new Date();
           const nextWeek = new Date(today);
@@ -325,7 +331,7 @@ function App() {
           });
         } else {
           // For specific dates, use the existing logic
-          const normalizedDate = normalizeDatePickerValue(filters.date);
+          const normalizedDate = normalizeDatePickerValue(currentFilters.date);
           filteredResults = filteredResults.filter(dropIn => 
             isDateInRange(normalizedDate, dropIn["Date Range"])
           );
@@ -333,8 +339,8 @@ function App() {
       }
 
       // Filter by time (if time is provided and not "Any Time")
-      if (filters.time && filters.time !== 'Any Time') {
-        const targetTime = formatTimeStringForComparison(filters.time);
+      if (currentFilters.time && currentFilters.time !== 'Any Time') {
+        const targetTime = formatTimeStringForComparison(currentFilters.time);
         filteredResults = filteredResults.filter(dropIn => {
           const startTime = formatTimeForComparison(dropIn["Start Hour"], dropIn["Start Minute"]);
           const endTime = formatTimeForComparison(dropIn["End Hour"], dropIn["End Min"]);
@@ -351,7 +357,7 @@ function App() {
         const startTime = `${dropIn["Start Hour"].toString().padStart(2, '0')}:${dropIn["Start Minute"].toString().padStart(2, '0')}`;
         const endTime = `${dropIn["End Hour"].toString().padStart(2, '0')}:${dropIn["End Min"].toString().padStart(2, '0')}`;
         
-        const resultDate = filters.date && filters.date !== 'this-week' ? normalizeDatePickerValue(filters.date) : dropIn["First Date"];
+        const resultDate = currentFilters.date && currentFilters.date !== 'this-week' ? normalizeDatePickerValue(currentFilters.date) : dropIn["First Date"];
         
         // Get URL and address for this location using location ID
         const locationId = dropIn["Location ID"].toString();
@@ -365,6 +371,10 @@ function App() {
           address: locationAddress
         });
         
+        // Get category information for this program
+        const categorizations = categorizeCourse(dropIn["Course Title"]);
+        const primaryCategory = categorizations.length > 0 ? categorizations[0] : null;
+        
         return {
           courseTitle: dropIn["Course Title"],
           location: locationName,
@@ -373,7 +383,9 @@ function App() {
           endTime: endTime,
           date: resultDate,
           locationURL: locationURL,
-          locationAddress: locationAddress
+          locationAddress: locationAddress,
+          category: primaryCategory?.category,
+          subcategory: primaryCategory?.subcategory
         };
       });
 
@@ -420,33 +432,41 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <header className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            Toronto Drop-in Recreation
-          </h1>
-          <p className="text-lg text-gray-600">
-            Find drop-in recreation programs by date, time, and location
-          </p>
+    <div className="relative flex h-screen w-full flex-col bg-[#f6f7f8] text-slate-800">
+      <div className="flex flex-1 flex-col min-h-0">
+        {/* Header */}
+        <header className="flex items-center justify-between whitespace-nowrap border-b border-slate-200/80 bg-white px-4 sm:px-6 py-3">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 text-[#13a4ec]">
+              <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <path clipRule="evenodd" d="M12.0799 24L4 19.2479L9.95537 8.75216L18.04 13.4961L18.0446 4H29.9554L29.96 13.4961L38.0446 8.75216L44 19.2479L35.92 24L44 28.7521L38.0446 39.2479L29.96 34.5039L29.9554 44H18.0446L18.04 34.5039L9.95537 39.2479L4 28.7521L12.0799 24Z" fill="currentColor" fillRule="evenodd"></path>
+              </svg>
+            </div>
+            <h2 className="text-lg font-bold">Drop-in Rec</h2>
+          </div>
+          <a className="flex items-center justify-center h-10 w-10 rounded-full hover:bg-slate-100 transition-colors" href="#">
+            <span className="material-symbols-outlined text-slate-500">
+              info
+            </span>
+          </a>
         </header>
 
-        <SearchForm
-          filters={filters}
-          onFiltersChange={setFilters}
-          courseTitles={courseTitles}
-          locations={locations}
-          onSearch={performSearch}
-          onClearResults={clearSearchResults}
-          isLoading={isLoading}
-          allDropIns={allDropIns}
-        />
-
-        {/* Main content area with sidebar layout */}
-        <div className="flex gap-6 mt-8">
-          {/* Left sidebar - Search Results */}
-          <div className="w-full lg:w-1/3">
-            <div className="bg-white rounded-lg shadow-lg p-4" style={{ height: 'calc(100vh - 200px)' }}>
+        {/* Main content area - Responsive layout */}
+        <div className="flex flex-1 min-h-0 flex-col lg:flex-row">
+          {/* Search Form - Full width on mobile, sidebar on desktop */}
+          <aside className="w-full lg:w-[460px] flex-shrink-0 border-r-0 lg:border-r border-slate-200 bg-white flex flex-col min-h-0">
+            <SearchForm
+              filters={filters}
+              onFiltersChange={setFilters}
+              onSearch={performSearch}
+              onClearResults={clearSearchResults}
+              isLoading={isLoading}
+              allDropIns={allDropIns}
+              courseTitles={allCourseTitles}
+              locations={allLocations.map(loc => loc["Location Name"])}
+              allLocations={allLocations}
+            />
+            <div className="flex-1 min-h-0 lg:block hidden">
               <SearchResults
                 results={results}
                 isLoading={isLoading}
@@ -457,14 +477,27 @@ function App() {
                 onSortOrderChange={setSortOrder}
               />
             </div>
-          </div>
+          </aside>
 
-          {/* Right side - Map */}
-          <div className="w-full lg:w-2/3">
-            <div className="bg-white rounded-lg shadow-lg p-4" style={{ height: 'calc(100vh - 200px)' }}>
+          {/* Map - Full width on mobile, right side on desktop */}
+          <main className="flex-1 min-h-0">
+            <div className="relative h-full w-full">
               <LocationMap key={mapKey} locations={mapLocations} isLoading={isLoading} selectedLocation={selectedLocation} onLocationSelect={handleLocationSelect} />
             </div>
-          </div>
+          </main>
+        </div>
+
+        {/* Mobile Results - Bottom sheet on mobile */}
+        <div className="lg:hidden">
+          <SearchResults
+            results={results}
+            isLoading={isLoading}
+            hasSearched={hasSearched}
+            onLocationSelect={handleLocationSelect}
+            selectedLocation={selectedLocation}
+            sortOrder={sortOrder}
+            onSortOrderChange={setSortOrder}
+          />
         </div>
       </div>
     </div>

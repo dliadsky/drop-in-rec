@@ -5,6 +5,7 @@ interface Location {
   lat: number;
   lng: number;
   address?: string;
+  url?: string;
 }
 
 interface LocationMapProps {
@@ -138,8 +139,14 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
           .setPopup(
             new (window as any).maplibregl.Popup().setHTML(`
               <div class="p-2">
-                <h3 class="font-semibold text-gray-800">${location.name}</h3>
-                ${location.address ? `<p class="text-sm text-gray-600">${location.address}</p>` : ''}
+                <h3 class="font-semibold text-base text-gray-900">${location.name}</h3>
+                ${location.address ? `<p class="mt-1 text-sm text-slate-500 whitespace-pre-line">${location.address}</p>` : ''}
+                ${location.url ? `
+                  <a class="p-1 mt-4 inline-flex items-center justify-center line-height-1 w-full bg-[#13a4ec] text-white text-sm font-medium px-4 rounded-lg hover:bg-[#13a4ec]/90 hover:shadow-lg hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#13a4ec] focus:ring-offset-2 transition-all duration-200 ease-in-out" href="${location.url}" target="_blank" rel="noopener noreferrer">
+                    <span>View on City Website</span>
+                    <span class="material-symbols-outlined ml-2 text-base transition-transform duration-200 ease-in-out group-hover:translate-x-1">arrow_right_alt</span>
+                  </a>
+                ` : ''}
               </div>
             `)
           )
@@ -250,17 +257,18 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
 
 
   return (
-    <div className="w-full h-full flex flex-col">
-      <div className="flex items-center justify-between mb-3 flex-shrink-0">
+    <div className="w-full h-full relative">
+      {/* Header positioned absolutely over the map */}
+      <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-sm">
         <h3 className="text-lg font-semibold text-gray-800">
           Locations ({locations.length})
         </h3>
       </div>
       
+      {/* Map fills the entire container */}
       <div 
         ref={mapContainer} 
-        className="w-full rounded-lg overflow-hidden"
-        style={{ height: 'calc(100vh - 280px)' }}
+        className="w-full h-full rounded-lg overflow-hidden"
       />
     </div>
   );
