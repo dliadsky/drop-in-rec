@@ -1,34 +1,43 @@
-name: Nightly JSON Update
+name: Nightly JSON Update (Pages)
 
 on:
   schedule:
     - cron: '0 3 * * *' # 03:00 UTC nightly
   workflow_dispatch:
 
-# IMPORTANT: allow the workflow to push commits
+# Needed to push commits to main (contents) and to deploy Pages (pages + id-token)
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+# Prevent overlapping Pages deploys
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
-  update-json:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        # defaults: persist-credentials: true (uses GITHUB_TOKEN)
-        # which is exactly what we want for pushing commits
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          # cache: 'npm'  # optional, speeds up installs
+          # Vite 7 requires Node 20.19+ or 22.12+; use the latest 22.x
+          node-version: '22'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
-        # or use npm ci if package-lock.json is present
+        run: npm ci
 
+      # ----- Generate your data files -----
       - name: Run geojson data download script
         run: node scripts/download-geojson.cjs
 
@@ -37,30 +46,32 @@ jobs:
 
       - name: Run drop-in data download script
         run: node scripts/download-drop-in.cjs
+
+      # ----- Commit JSON changes back to main (if any) -----
       - name: Commit and push changes (if any)
         run: |
-          # Set local git identity for this repo
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Stage only the expected files
           git add "public/Parks and Recreation Facilities - 4326.geojson" "public/Locations.json" "public/Drop-in.json"
 
-          # If nothing staged, exit cleanly
           if git diff --cached --quiet; then
             echo "No changes to commit"
-            exit 0
+          else
+            git commit -m "Nightly update of drop-in recreation JSON files"
+            git push
           fi
 
-          git commit -m "Nightly update of drop-in recreation JSON files"
-          git push
-
+      # ----- Build the site -----
       - name: Build Vite app
         run: npm run build
 
-      # If your deploy script uses the "gh-pages" package, it may look for GITHUB_TOKEN.
-      # The built-in token is automatically created for each workflow run.
+      # ----- Deploy to GitHub Pages using official actions -----
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
       - name: Deploy to GitHub Pages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run deploy
+        id: deploy
+        uses: actions/deploy-pages@v4
