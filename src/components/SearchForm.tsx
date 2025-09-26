@@ -585,7 +585,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
           <div className="relative">
             <button className="flex items-center justify-between gap-1.5 rounded-lg bg-[#f6f7f8] px-3 py-2.5 text-sm font-medium hover:bg-slate-200 transition-colors w-full">
               <span className="truncate">
-                {filters.time && filters.time !== 'Any Time' ? formatTimeToAMPM(filters.time) : 'Time'}
+                {filters.time && filters.time !== 'Any Time' ? formatTimeToAMPM(filters.time) : 'Any Time'}
               </span>
               <span className="material-symbols-outlined text-base flex-shrink-0"> expand_more </span>
             </button>
@@ -606,7 +606,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
           <div className="relative">
             <button className="flex items-center justify-between gap-1.5 rounded-lg bg-[#f6f7f8] px-3 py-2.5 text-sm font-medium hover:bg-slate-200 transition-colors w-full">
               <span className="truncate">
-                {filters.age ? filters.age : 'Age'}
+                {filters.age ? (filters.age === '99' ? 'Age 99+' : `Age ${filters.age}`) : 'Any Age'}
               </span>
               <span className="material-symbols-outlined text-base flex-shrink-0"> expand_more </span>
             </button>
