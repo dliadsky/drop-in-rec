@@ -42,6 +42,7 @@ interface SearchFilters {
   date: string;
   time: string;
   location: string;
+  age: string;
 }
 
 interface SearchResult {
@@ -55,6 +56,7 @@ interface SearchResult {
   locationAddress?: string | null;
   category?: string;
   subcategory?: string;
+  ageRange?: string;
 }
 
 interface Location {
@@ -100,7 +102,8 @@ function App() {
     subcategory: '',
     date: getCurrentDate(),
     time: getCurrentTime(),
-    location: ''
+    location: '',
+    age: ''
   });
   
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -259,7 +262,7 @@ function App() {
   const performSearch = async (searchFilters?: SearchFilters) => {
     const currentFilters = searchFilters || filters;
     
-    if (!currentFilters.date && !currentFilters.courseTitle && !currentFilters.location && !currentFilters.time && !currentFilters.category) {
+    if (!currentFilters.date && !currentFilters.courseTitle && !currentFilters.location && !currentFilters.time && !currentFilters.category && !currentFilters.age) {
       setResults([]);
       setHasSearched(true);
       return;
@@ -350,6 +353,18 @@ function App() {
         });
       }
 
+      // Filter by age (if age is provided)
+      if (currentFilters.age) {
+        const selectedAge = parseInt(currentFilters.age);
+        filteredResults = filteredResults.filter(dropIn => {
+          const ageMin = parseInt(dropIn["Age Min"]) || 0;
+          const ageMax = dropIn["Age Max"] === "None" ? 999 : parseInt(dropIn["Age Max"]) || 999;
+          
+          // Check if the selected age falls within the program's age range
+          return selectedAge >= ageMin && selectedAge <= ageMax;
+        });
+      }
+
       // Convert to search results format
       const locationMap = new Map(allLocations.map(loc => [loc["Location ID"], loc["Location Name"]]));
       const searchResults: SearchResult[] = filteredResults.map(dropIn => {
@@ -375,6 +390,16 @@ function App() {
         const categorizations = categorizeCourse(dropIn["Course Title"]);
         const primaryCategory = categorizations.length > 0 ? categorizations[0] : null;
         
+        // Calculate age range display
+        const ageMin = dropIn["Age Min"];
+        const ageMax = dropIn["Age Max"];
+        let ageRange = '';
+        if (ageMax === "None") {
+          ageRange = `Ages ${ageMin}+`;
+        } else {
+          ageRange = `Ages ${ageMin}-${ageMax}`;
+        }
+        
         return {
           courseTitle: dropIn["Course Title"],
           location: locationName,
@@ -385,7 +410,8 @@ function App() {
           locationURL: locationURL,
           locationAddress: locationAddress,
           category: primaryCategory?.category,
-          subcategory: primaryCategory?.subcategory
+          subcategory: primaryCategory?.subcategory,
+          ageRange: ageRange
         };
       });
 

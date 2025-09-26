@@ -24,6 +24,7 @@ interface SearchResult {
   locationAddress?: string | null;
   category?: string;
   subcategory?: string;
+  ageRange?: string;
 }
 
 // Helper function to format date for display without timezone issues
@@ -194,18 +195,25 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, hasSe
                 }`}
                 onClick={() => onLocationSelect?.(result.location)}
               >
-                <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg ${
-                  selectedLocation === result.location 
-                    ? 'bg-[#13a4ec]/20 text-[#13a4ec]' 
-                    : 'bg-[#13a4ec]/10 text-[#13a4ec]'
-                }`}>
-                  <span className="material-symbols-outlined">{getCategoryIcon(result.category || '', result.subcategory)}</span>
+                <div className="flex flex-col items-center w-16 flex-shrink-0">
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${
+                    selectedLocation === result.location 
+                      ? 'bg-[#13a4ec]/20 text-[#13a4ec]' 
+                      : 'bg-[#13a4ec]/10 text-[#13a4ec]'
+                  }`}>
+                    <span className="material-symbols-outlined">{getCategoryIcon(result.category || '', result.subcategory)}</span>
+                  </div>
+                  {result.ageRange && (
+                    <p className={`text-xs mt-1 text-center w-full ${
+                      selectedLocation === result.location ? 'text-[#13a4ec]/60' : 'text-slate-400'
+                    }`}>{result.ageRange}</p>
+                  )}
                 </div>
                 <div className="flex-1">
                   <p className={`font-semibold ${
                     selectedLocation === result.location ? 'text-[#13a4ec]' : ''
                   }`}>{result.courseTitle}</p>
-                  <p className={`text-sm ${
+                   <p className={`text-sm  ${
                     selectedLocation === result.location ? 'text-[#13a4ec]/80' : 'text-slate-500'
                   }`}>{result.location}</p>
                   <div className="flex items-center justify-between mt-1 text-sm">

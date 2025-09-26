@@ -37,6 +37,7 @@ interface SearchFilters {
   date: string;
   time: string;
   location: string;
+  age: string;
 }
 
 interface SearchFormProps {
@@ -556,8 +557,8 @@ const SearchForm: React.FC<SearchFormProps> = ({
           )}
         </div>
       </div>
-      {/* Day and Time Buttons - Two Column Layout */}
-        <div className="grid grid-cols-2 gap-2">
+      {/* Day, Time, and Age Buttons - Three Column Layout */}
+        <div className="grid grid-cols-3 gap-2">
           {/* Day Button */}
           <div className="relative">
             <button className="flex items-center justify-between gap-1.5 rounded-lg bg-[#f6f7f8] px-3 py-2.5 text-sm font-medium hover:bg-slate-200 transition-colors w-full">
@@ -595,6 +596,28 @@ const SearchForm: React.FC<SearchFormProps> = ({
               {timeOptions.map((time) => (
                 <option key={time} value={time}>
                   {formatTimeToAMPM(time)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Age Button */}
+          <div className="relative">
+            <button className="flex items-center justify-between gap-1.5 rounded-lg bg-[#f6f7f8] px-3 py-2.5 text-sm font-medium hover:bg-slate-200 transition-colors w-full">
+              <span className="truncate">
+                {filters.age ? filters.age : 'Age'}
+              </span>
+              <span className="material-symbols-outlined text-base flex-shrink-0"> expand_more </span>
+            </button>
+            <select
+              className="absolute inset-0 opacity-0 cursor-pointer"
+              value={filters.age}
+              onChange={(e) => handleInputChange('age', e.target.value)}
+            >
+              <option value="">Any Age</option>
+              {Array.from({ length: 100 }, (_, i) => (
+                <option key={i} value={i.toString()}>
+                  {i === 99 ? '99+' : i.toString()}
                 </option>
               ))}
             </select>
