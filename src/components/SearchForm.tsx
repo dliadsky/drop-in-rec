@@ -189,7 +189,8 @@ const SearchForm: React.FC<SearchFormProps> = ({
       subcategory: '',
       date: getCurrentDate(),
       time: getCurrentTime(),
-      location: ''
+      location: '',
+      age: ''
     };
     
     // Reset all search inputs
