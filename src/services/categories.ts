@@ -11,6 +11,7 @@ export interface Subcategory {
   id: string;
   name: string;
   keywords: string[];
+  exclusions?: string[]; // Keywords that should prevent matching if present in the title
   isFallback?: boolean; // If true, only matches when no other subcategory in the same category matches
   icon?: string; // Material symbol icon for the subcategory (optional, falls back to category icon)
 }
@@ -21,12 +22,12 @@ export const categories: Category[] = [
     name: 'Arts & Crafts',
     icon: 'palette',
     subcategories: [
-      { id: 'visual-arts', name: 'Visual Arts', keywords: ['painting', 'drawing', 'photography', 'visual art'], icon: 'palette' },
+      { id: 'visual-arts', name: 'Visual Arts', keywords: ['painting', 'drawing', 'photography', 'visual art'], exclusions: ['arthritis', 'arthritic'], icon: 'palette' },
       { id: 'crafts', name: 'Crafts', keywords: ['craft', 'sewing', 'knitting', 'crochet', 'quilting', 'decoupage'], icon: 'palette' },
-      { id: 'music', name: 'Music', keywords: ['music', 'band', 'choir', 'drumming', 'karaoke', 'drum', 'open mic'], icon: 'music_note' },
+      { id: 'music', name: 'Music', keywords: ['music', 'band', 'choir', 'drumming', 'karaoke', 'drum', 'open mic'], exclusions: ['no music'], icon: 'music_note' },
       { id: 'dance', name: 'Dance', keywords: ['dance', 'tango', 'ballroom', 'hip hop', 'line dance', 'vogue'], icon: 'taunt' },
       { id: 'creative-writing', name: 'Creative Writing', keywords: ['creative writing', 'writing'], icon: 'edit' },
-      { id: 'other-arts', name: 'Other Arts Programs', keywords: ['art', 'bunka', 'colouring', 'jewellery making'], isFallback: true, icon: 'palette' }
+      { id: 'other-arts', name: 'Other Arts Programs', keywords: ['art', 'bunka', 'colouring', 'jewellery making'], exclusions: ['arthritis', 'martial arts'], isFallback: true, icon: 'palette' }
     ]
   },
   {
@@ -62,6 +63,7 @@ export const categories: Category[] = [
     name: 'Games & Recreation',
     icon: 'toys',
     subcategories: [
+      { id: 'club', name: 'Clubs', keywords: ['club'], icon: 'groups' },
       { id: 'board-games', name: 'Board Games', keywords: ['board games', ': board', 'chess'], icon: 'toys_and_games' },
       { id: 'card-games', name: 'Card Games', keywords: ['cards', 'euchre', 'bridge', 'cribbage'], icon: 'playing_cards' },
       { id: 'billiards', name: 'Billiards & Pool', keywords: ['billiards', 'snooker', 'pool'], icon: 'counter_8' },
@@ -127,7 +129,7 @@ export const categories: Category[] = [
     name: 'Youth Programs',
     icon: 'group',
     subcategories: [
-      { id: 'youth-clubs', name: 'Youth Clubs', keywords: ['youth club', 'teen club', 'club', 'zone'], icon: 'groups' },
+      { id: 'youth-clubs', name: 'Youth Clubs', keywords: ['youth club', 'teen club', 'zone', 'homework'], icon: 'groups' },
       { id: 'youth-sports', name: 'Youth Sports', keywords: ['youth sport', 'youth basketball', 'youth soccer', 'youth hockey', 'youth volleyball', 'youth tennis', 'youth badminton', 'youth table tennis', 'youth multi-sport', 'youth shinny', 'child sport', 'kids sport'], icon: 'sports' },
       { id: 'youth-arts', name: 'Youth Arts', keywords: ['youth art', 'youth craft', 'youth music', 'youth dance', 'youth creative', 'child art', 'child craft', 'child music', 'child dance', 'kids art', 'kids craft', 'kids music', 'kids dance'], icon: 'palette' },
       { id: 'youth-leadership', name: 'Youth Leadership', keywords: ['youth leadership', 'youth council'], icon: 'group' },
@@ -168,6 +170,13 @@ export const categorizeCourse = (courseTitle: string): Array<{ category: string;
   // Check for matches in order of specificity
   for (const { category, subcategory, keyword } of allSubcategories) {
     if (lowerTitle.includes(keyword.toLowerCase())) {
+      // Check for exclusions - if any exclusion keyword is present, skip this match
+      if (subcategory.exclusions && subcategory.exclusions.some((exclusion: string) => 
+        lowerTitle.includes(exclusion.toLowerCase())
+      )) {
+        continue;
+      }
+      
       // Special case: exclude walking matches if acqua fitness is present
       if (subcategory.id === 'walking' && (lowerTitle.includes('acqua fitness') || lowerTitle.includes('aquatic fitness'))) {
         continue;
@@ -201,6 +210,13 @@ export const categorizeCourse = (courseTitle: string): Array<{ category: string;
         // Check if this fallback subcategory's keywords match
         for (const keyword of subcategory.keywords) {
           if (lowerTitle.includes(keyword.toLowerCase())) {
+            // Check for exclusions - if any exclusion keyword is present, skip this match
+            if (subcategory.exclusions && subcategory.exclusions.some((exclusion: string) => 
+              lowerTitle.includes(exclusion.toLowerCase())
+            )) {
+              continue;
+            }
+            
             const matchKey = `${category.id}-${subcategory.id}`;
             if (!matchedPrograms.has(matchKey)) {
               matches.push({ 
