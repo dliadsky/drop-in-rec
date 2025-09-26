@@ -38,7 +38,7 @@ export const categories: Category[] = [
       { id: 'family-swim', name: 'Family Swim', keywords: ['family swim'  ], icon: 'pool' },
       { id: 'family-sports', name: 'Family Sports', keywords: ['basketball with family', 'badminton with family', 'pickleball with family', 'soccer with family', 'volleyball with family', 'tennis with family', 'table-tennis with family', 'skate with family', 'multi-sport with family'], icon: 'family_restroom' },
       { id: 'family-arts', name: 'Family Arts', keywords: ['family arts'], icon: 'palette' },
-      { id: 'early-years', name: 'Early Years', keywords: ['early years', 'preschool', 'caregiver'], icon: 'child_care' },
+      { id: 'early-years', name: 'Early Years', keywords: ['early years', 'preschool', 'caregiver'], exclusions: ['leisure Skate: child with caregiver'], icon: 'child_care' },
       { id: 'other-family-programs', name: 'Other Family Programs', keywords: ['family'], isFallback: true, icon: 'family_restroom' }
     ]
   },
@@ -130,8 +130,7 @@ export const categories: Category[] = [
     icon: 'group',
     subcategories: [
       { id: 'youth-clubs', name: 'Youth Clubs', keywords: ['youth club', 'teen club', 'zone', 'homework'], icon: 'groups' },
-      { id: 'youth-sports', name: 'Youth Sports', keywords: ['youth sport', 'youth basketball', 'youth soccer', 'youth hockey', 'youth volleyball', 'youth tennis', 'youth badminton', 'youth table tennis', 'youth multi-sport', 'youth shinny', 'child sport', 'kids sport'], icon: 'sports' },
-      { id: 'youth-arts', name: 'Youth Arts', keywords: ['youth art', 'youth craft', 'youth music', 'youth dance', 'youth creative', 'child art', 'child craft', 'child music', 'child dance', 'kids art', 'kids craft', 'kids music', 'kids dance'], icon: 'palette' },
+     { id: 'youth-arts', name: 'Youth Arts', keywords: ['youth art', 'youth craft', 'youth music', 'youth dance', 'youth creative', 'child art', 'child craft', 'child music', 'child dance', 'kids art', 'kids craft', 'kids music', 'kids dance'], icon: 'palette' },
       { id: 'youth-leadership', name: 'Youth Leadership', keywords: ['youth leadership', 'youth council'], icon: 'group' },
       { id: 'other-youth', name: 'Other Youth Programs', keywords: ['youth', 'teen'], isFallback: true, icon: 'group' }
     ]
@@ -139,10 +138,47 @@ export const categories: Category[] = [
 ];
 
 // Function to categorize a course title - returns all matches with hierarchical keyword matching
-export const categorizeCourse = (courseTitle: string): Array<{ category: string; subcategory: string }> => {
+export const categorizeCourse = (courseTitle: string, ageMin?: string, ageMax?: string): Array<{ category: string; subcategory: string }> => {
   const lowerTitle = courseTitle.toLowerCase();
   const matches: Array<{ category: string; subcategory: string; keywordLength: number }> = [];
   const matchedPrograms = new Set<string>(); // Track which programs have been matched
+  
+  // Check for age-based categorization first
+  if (ageMin) {
+    const minAge = parseInt(ageMin);
+    
+    // If the program is specifically for seniors (60+), categorize as Senior Programs
+    if (minAge >= 60) {
+      const matchKey = 'specialized-senior';
+      if (!matchedPrograms.has(matchKey)) {
+        matches.push({ 
+          category: 'specialized', 
+          subcategory: 'senior', 
+          keywordLength: 999 // High priority for age-based matching
+        });
+        matchedPrograms.add(matchKey);
+      }
+    }
+  }
+  
+  // Check for youth age ranges - categorize as Youth Sports
+  if (ageMax) {
+    const maxAge = ageMax === "None" ? 999 : parseInt(ageMax);
+    
+    // If the program's maximum age is between 13-24, categorize as Youth Sports
+    // This covers programs like: 0-13, 0-14, 0-15, ..., 0-24, 5-18, 10-24, etc.
+    if (maxAge >= 13 && maxAge <= 24) {
+      const matchKey = 'youth-other-youth';
+      if (!matchedPrograms.has(matchKey)) {
+        matches.push({ 
+          category: 'youth', 
+          subcategory: 'other-youth', 
+          keywordLength: 998 // High priority for age-based matching
+        });
+        matchedPrograms.add(matchKey);
+      }
+    }
+  }
   
   // First pass: Try specific keywords (longer phrases) - prioritize by keyword length
   const allSubcategories: Array<{ category: any; subcategory: any; keyword: string }> = [];
@@ -248,8 +284,8 @@ export const categorizeCourse = (courseTitle: string): Array<{ category: string;
 };
 
 // Function to check if a course title matches a specific category/subcategory
-export const courseMatchesCategory = (courseTitle: string, categoryId: string, subcategoryId?: string): boolean => {
-  const categorizations = categorizeCourse(courseTitle);
+export const courseMatchesCategory = (courseTitle: string, categoryId: string, subcategoryId?: string, ageMin?: string, ageMax?: string): boolean => {
+  const categorizations = categorizeCourse(courseTitle, ageMin, ageMax);
   
   if (subcategoryId) {
     return categorizations.some(cat => cat.category === categoryId && cat.subcategory === subcategoryId);
@@ -305,7 +341,9 @@ export const getAllSubcategories = (): Subcategory[] => {
 export const getCourseTitlesForCategory = (
   allCourseTitles: string[],
   categoryId: string,
-  subcategoryId: string
+  subcategoryId: string,
+  ageMin?: string,
+  ageMax?: string
 ): string[] => {
   if (categoryId === 'all' || !categoryId) {
     return allCourseTitles;
@@ -316,7 +354,7 @@ export const getCourseTitlesForCategory = (
   
   // If no subcategory is selected, return all titles for this category
   if (!subcategoryId || subcategoryId === '') {
-    return allCourseTitles.filter(title => courseMatchesCategory(title, categoryId));
+    return allCourseTitles.filter(title => courseMatchesCategory(title, categoryId, undefined, ageMin, ageMax));
   }
   
   const subcategory = category.subcategories.find(sub => sub.id === subcategoryId);
@@ -324,10 +362,10 @@ export const getCourseTitlesForCategory = (
   
   if (subcategory.keywords.length === 0) {
     // For "General" subcategory, return all titles that don't match other categories
-    return allCourseTitles.filter(title => courseMatchesCategory(title, categoryId));
+    return allCourseTitles.filter(title => courseMatchesCategory(title, categoryId, undefined, ageMin, ageMax));
   }
   
-  return allCourseTitles.filter(title => courseMatchesCategory(title, categoryId, subcategoryId));
+  return allCourseTitles.filter(title => courseMatchesCategory(title, categoryId, subcategoryId, ageMin, ageMax));
 };
 
 // Function to get the icon for a category and subcategory

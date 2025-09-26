@@ -3,7 +3,7 @@ import SearchForm from './components/SearchForm';
 import SearchResults from './components/SearchResults';
 import LocationMap from './components/LocationMap';
 import { getAllResources, getDayOfWeek, formatTimeForComparison, formatTimeStringForComparison, isDateInRange, normalizeDatePickerValue } from './services/api';
-import { getCourseTitlesForCategory, categorizeCourse } from './services/categories';
+import { categorizeCourse } from './services/categories';
 import { loadGeoJSONData, createLocationURLMap, createLocationCoordsMap } from './services/geojson';
 
 // Helper function to get current date in YYYY-MM-DD format
@@ -280,20 +280,25 @@ function App() {
 
       // Filter by category/subcategory first
       if (currentFilters.category) {
-        const categoryFilteredTitles = getCourseTitlesForCategory(
-          allCourseTitles,
-          currentFilters.category,
-          currentFilters.subcategory // Pass the actual subcategory value (empty string means "all subcategories")
-        );
-        
-        
-        filteredResults = filteredResults.filter(dropIn => 
-          categoryFilteredTitles.includes(dropIn["Course Title"])
-        );
+        // For category filtering, we need to check each program individually
+        // because age-based categorization happens at the program level
+        filteredResults = filteredResults.filter(dropIn => {
+          const categorizations = categorizeCourse(dropIn["Course Title"], dropIn["Age Min"], dropIn["Age Max"]);
+          
+          if (currentFilters.subcategory) {
+            // Both category and subcategory specified
+            return categorizations.some(cat => 
+              cat.category === currentFilters.category && cat.subcategory === currentFilters.subcategory
+            );
+          } else {
+            // Only category specified
+            return categorizations.some(cat => cat.category === currentFilters.category);
+          }
+        });
       } else if (currentFilters.subcategory) {
         // When no category is selected but a subcategory is, filter by that subcategory across all categories
         filteredResults = filteredResults.filter(dropIn => {
-          const categorizations = categorizeCourse(dropIn["Course Title"]);
+          const categorizations = categorizeCourse(dropIn["Course Title"], dropIn["Age Min"], dropIn["Age Max"]);
           return categorizations.some(cat => cat.subcategory === currentFilters.subcategory);
         });
       }
@@ -391,7 +396,7 @@ function App() {
         });
         
         // Get category information for this program
-        const categorizations = categorizeCourse(dropIn["Course Title"]);
+        const categorizations = categorizeCourse(dropIn["Course Title"], dropIn["Age Min"], dropIn["Age Max"]);
         const primaryCategory = categorizations.length > 0 ? categorizations[0] : null;
         
         // Calculate age range display
@@ -528,7 +533,7 @@ function App() {
           />
         </div>
       </div>
-    </div>
+      </div>
   );
 }
 

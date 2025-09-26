@@ -393,7 +393,8 @@ const SearchForm: React.FC<SearchFormProps> = ({
       if (!courseTitle) return false;
       
       // Use the new courseMatchesCategory function to check if this program matches the category/subcategory
-      return courseMatchesCategory(courseTitle, categoryId, subcategoryId);
+      // Pass age parameters to include age-based categorization
+      return courseMatchesCategory(courseTitle, categoryId, subcategoryId, dropIn["Age Min"], dropIn["Age Max"]);
     });
   }, [allDropIns]);
 
