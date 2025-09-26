@@ -137,6 +137,13 @@ export const categories: Category[] = [
   },
 ];
 
+// Age-based categorization configuration
+const ageBasedCategories = {
+  'early-years-programs': { min: 0, max: 6, category: 'family', subcategory: 'early-years' },
+  'youth-programs': { min: 13, max: 24, category: 'youth', subcategory: 'other-youth' },
+  'senior-programs': { min: 60, max: 999, category: 'specialized', subcategory: 'senior' }
+};
+
 // Function to categorize a course title - returns all matches with hierarchical keyword matching
 export const categorizeCourse = (courseTitle: string, ageMin?: string, ageMax?: string): Array<{ category: string; subcategory: string }> => {
   const lowerTitle = courseTitle.toLowerCase();
@@ -144,36 +151,33 @@ export const categorizeCourse = (courseTitle: string, ageMin?: string, ageMax?: 
   const matchedPrograms = new Set<string>(); // Track which programs have been matched
   
   // Check for age-based categorization first
-  if (ageMin) {
-    const minAge = parseInt(ageMin);
+  if (ageMin || ageMax) {
+    const minAge = ageMin ? parseInt(ageMin) : 0;
+    const maxAge = ageMax === "None" ? 999 : (ageMax ? parseInt(ageMax) : 999);
     
-    // If the program is specifically for seniors (60+), categorize as Senior Programs
-    if (minAge >= 60) {
-      const matchKey = 'specialized-senior';
-      if (!matchedPrograms.has(matchKey)) {
-        matches.push({ 
-          category: 'specialized', 
-          subcategory: 'senior', 
-          keywordLength: 999 // High priority for age-based matching
-        });
-        matchedPrograms.add(matchKey);
+    // Check each age-based category configuration
+    for (const [key, config] of Object.entries(ageBasedCategories)) {
+      const matchKey = `${config.category}-${config.subcategory}`;
+      
+      // Check if the program's age range matches this age-based category
+      let matchesAge = false;
+      
+      if (config.min !== undefined && config.max !== undefined) {
+        // Range-based matching (e.g., 13-24 for youth programs)
+        matchesAge = maxAge >= config.min && maxAge <= config.max;
+      } else if (config.min !== undefined) {
+        // Minimum age matching (e.g., 60+ for senior programs)
+        matchesAge = minAge >= config.min;
+      } else if (config.max !== undefined) {
+        // Maximum age matching
+        matchesAge = maxAge <= config.max;
       }
-    }
-  }
-  
-  // Check for youth age ranges - categorize as Youth Sports
-  if (ageMax) {
-    const maxAge = ageMax === "None" ? 999 : parseInt(ageMax);
-    
-    // If the program's maximum age is between 13-24, categorize as Youth Sports
-    // This covers programs like: 0-13, 0-14, 0-15, ..., 0-24, 5-18, 10-24, etc.
-    if (maxAge >= 13 && maxAge <= 24) {
-      const matchKey = 'youth-other-youth';
-      if (!matchedPrograms.has(matchKey)) {
+      
+      if (matchesAge && !matchedPrograms.has(matchKey)) {
         matches.push({ 
-          category: 'youth', 
-          subcategory: 'other-youth', 
-          keywordLength: 998 // High priority for age-based matching
+          category: config.category, 
+          subcategory: config.subcategory, 
+          keywordLength: 999 - Object.keys(ageBasedCategories).indexOf(key) // High priority, ordered by config
         });
         matchedPrograms.add(matchKey);
       }
