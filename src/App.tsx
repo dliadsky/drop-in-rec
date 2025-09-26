@@ -171,6 +171,13 @@ function App() {
     loadData();
   }, []);
 
+  // Trigger initial search when data is loaded
+  useEffect(() => {
+    if (allDropIns.length > 0 && !hasSearched) {
+      performSearch();
+    }
+  }, [allDropIns.length, hasSearched]);
+
   // Filter course titles based on selected category and subcategory
 
   const clearSearchResults = () => {
@@ -262,11 +269,8 @@ function App() {
   const performSearch = async (searchFilters?: SearchFilters) => {
     const currentFilters = searchFilters || filters;
     
-    if (!currentFilters.date && !currentFilters.courseTitle && !currentFilters.location && !currentFilters.time && !currentFilters.category && !currentFilters.age) {
-      setResults([]);
-      setHasSearched(true);
-      return;
-    }
+    // Show all programs by default - only return empty if explicitly requested
+    // (This allows the app to show all programs on initial load)
 
     setIsLoading(true);
     setHasSearched(true);

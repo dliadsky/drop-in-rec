@@ -442,7 +442,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
         <div className="relative">
           <button className="flex items-center justify-between gap-1.5 rounded-lg bg-[#f6f7f8] px-3 py-2.5 text-sm font-medium hover:bg-slate-200 transition-colors w-full">
             <span className="truncate">
-              {filters.category ? filteredCategories.find(c => c.id === filters.category)?.name || 'Category' : 'Category'}
+              {filters.category ? filteredCategories.find(c => c.id === filters.category)?.name || 'Category' : 'All Categories'}
             </span>
             <span className="material-symbols-outlined text-base flex-shrink-0"> expand_more </span>
           </button>
@@ -464,7 +464,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
         <div className="relative">
           <button className="flex items-center justify-between gap-1.5 rounded-lg bg-[#f6f7f8] px-3 py-2.5 text-sm font-medium hover:bg-slate-200 transition-colors w-full">
             <span className="truncate">
-              {filters.subcategory ? filteredSubcategories.find(s => s.id === filters.subcategory)?.name || 'Subcategory' : 'Subcategory'}
+              {filters.subcategory ? filteredSubcategories.find(s => s.id === filters.subcategory)?.name || 'Subcategory' : 'All Subcategories'}
             </span>
             <span className="material-symbols-outlined text-base flex-shrink-0"> expand_more </span>
           </button>
