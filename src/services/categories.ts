@@ -13,6 +13,7 @@ export interface Subcategory {
   keywords: string[];
   exclusions?: string[]; // Keywords that should prevent matching if present in the title
   isFallback?: boolean; // If true, only matches when no other subcategory in the same category matches
+  ageRequirement?: { min?: number; max?: number }; // Age requirements for this subcategory
 }
 
 
@@ -25,7 +26,9 @@ export const programIconMappings: Array<{ keywords: string[]; icon: string }> = 
   { keywords: ['badminton'], icon: 'badminton' },
   { keywords: ['pickleball'], icon: 'pickleball' },
   { keywords: ['table tennis'], icon: 'padel' },
-  { keywords: ['hockey'], icon: 'sports_hockey' },
+  { keywords: ['hockey', 'shinny'], icon: 'sports_hockey' },
+  { keywords: ['cricket'], icon: 'sports_cricket' },
+  { keywords: ['multi-sport'], icon: 'directions_run' },
   
   // Swimming & Aquatics
   { keywords: ['swimming', 'swim', 'aquatic fitness'], icon: 'pool' },
@@ -36,6 +39,7 @@ export const programIconMappings: Array<{ keywords: string[]; icon: string }> = 
   { keywords: ['tai chi'], icon: 'taunt' },
   { keywords: ['strength', 'gym'], icon: 'fitness_center' },
   { keywords: ['walk'], icon: 'directions_walk' },
+  { keywords: ['open space'], icon: 'crop_square' },
   
   // Arts & Crafts
   { keywords: ['dance', 'zumba'], icon: 'taunt' },
@@ -43,16 +47,22 @@ export const programIconMappings: Array<{ keywords: string[]; icon: string }> = 
   { keywords: ['photography'], icon: 'photo_camera' },
   
   // Games & Recreation
-  { keywords: ['archery'], icon: 'target' },
+  { keywords: ['archery'], icon: 'target' },  
+  { keywords: ['club'], icon: 'groups' },
   { keywords: ['bocce'], icon: 'scatter_plot' },
   { keywords: ['bowling'], icon: 'circle' },
   { keywords: ['bingo'], icon: 'casino' },
   { keywords: ['chess'], icon: 'chess_knight' },
   { keywords: ['cards'], icon: 'playing_cards' },
-  { keywords: ['chop it'], icon: 'chef_hat' },
+  { keywords: ['chop it', 'cooking'], icon: 'chef_hat' },
   { keywords: ['snooker'], icon: 'counter_8' },
   { keywords: ['darts'], icon: 'target' },
   { keywords: ['game'], icon: 'Ifl' },
+  { keywords: ['skateboard'], icon: 'skateboarding' },
+  { keywords: ['lunch'], icon: 'flatware' },
+  { keywords: ['movie'], icon: 'movie' },
+  { keywords: ['study time'], icon: 'dictionary' },
+  { keywords: ['hair'], icon: 'self_care' },
   { keywords: ['video game', 'gaming'], icon: 'videogame_asset' }
 ];
 
@@ -62,8 +72,8 @@ export const categories: Category[] = [
     name: 'Arts & Crafts',
     fallbackIcon: 'palette',
     subcategories: [
-      { id: 'visual-arts', name: 'Visual Arts', keywords: ['painting', 'drawing', 'photography', 'visual art', 'design'], exclusions: ['arthritis', 'arthritic'] },
-      { id: 'crafts', name: 'Crafts', keywords: ['craft', 'sewing', 'knitting', 'crochet', 'quilting', 'decoupage'] },
+      { id: 'visual-arts', name: 'Visual Arts', keywords: ['painting', 'drawing', 'photography', 'visual art', 'design', 'colouring', 'stained glass'], exclusions: ['arthritis', 'arthritic'] },
+      { id: 'crafts', name: 'Crafts', keywords: ['craft', 'sewing', 'knitting', 'crochet', 'quilting', 'decoupage', 'paper tole', 'bunka', 'carving'] },
       { id: 'music', name: 'Music', keywords: ['music', 'band', 'choir', 'drumming', 'karaoke', 'drum', 'open mic'], exclusions: ['no music'] },
       { id: 'dance', name: 'Dance', keywords: ['dance', 'tango', 'ballroom', 'hip hop', 'line dance', 'vogue'] },
       { id: 'creative-writing', name: 'Creative Writing', keywords: ['creative writing', 'writing'] },
@@ -72,14 +82,14 @@ export const categories: Category[] = [
   },
   {
     id: 'family',
-    name: 'Family',
+    name: 'Family Programs',
     fallbackIcon: 'family_restroom',
     subcategories: [
-      { id: 'family-swim', name: 'Family Swim', keywords: ['family swim'  ] },
+      { id: 'family-swim', name: 'Family Swim', keywords: ['family swim'] },
       { id: 'family-sports', name: 'Family Sports', keywords: ['basketball with family', 'badminton with family', 'pickleball with family', 'soccer with family', 'volleyball with family', 'tennis with family', 'table-tennis with family', 'skate with family', 'multi-sport with family'] },
       { id: 'family-arts', name: 'Family Arts', keywords: ['family arts'] },
-      { id: 'early-years', name: 'Early Years', keywords: ['early years', 'preschool', 'caregiver'], exclusions: ['leisure Skate: child with caregiver'] },
-      { id: 'other-family-programs', name: 'Other Family Programs', keywords: ['family'], isFallback: true }
+      { id: 'early-years', name: 'Early Years', keywords: ['early years', 'preschool', 'caregiver', 'soccer'], exclusions: ['leisure Skate: child with caregiver'] , ageRequirement: { max: 6 }},
+      { id: 'other-family-programs', name: 'Other Family Programs', keywords: ['family'], ageRequirement: { max: 6 }, isFallback: true }
     ]
   },
   {
@@ -114,11 +124,25 @@ export const categories: Category[] = [
     ]
   },
   {
+    id: 'older-adult',
+    name: 'Older Adult Programs',
+    fallbackIcon: 'group',
+    subcategories: [
+      { id: 'older-adult-arts-crafts', name: 'Older Adult Arts & Crafts', keywords: ['painting', 'drawing', 'photography', 'visual art', 'design', 'colouring', 'craft', 'sewing', 'knitting', 'crochet', 'quilting', 'decoupage', 'paper tole', 'bunka', 'stained glass', 'carving', 'writing', 'music', 'band', 'choir', 'drumming', 'karaoke', 'drum', 'open mic', 'dance', 'tango', 'ballroom'], exclusions: ['dart'], ageRequirement: { min: 60 } },
+      { id: 'older-adult-games', name: 'Older Adult Games & Recreation', keywords: ['club', 'bingo', 'bocce', 'game', 'cards', 'bowling', 'dance', 'bridge', 'euchre', 'cribbage', 'billiards', 'pool', 'snooker', 'darts', 'archery', 'bowling', 'karaoke', 'dance', 'tango', 'ballroom', 'hip hop', 'line dance', 'vogue'], ageRequirement: { min: 60 } },
+      { id: 'older-adult-swimming', name: 'Older Adult Swimming & Aquatics', keywords: ['swim', 'aquatic'], ageRequirement: { min: 60 } },
+      { id: 'older-adult-fitness', name: 'Older Adult Fitness & Wellness', keywords: ['yoga', 'pilates', 'zumba', 'tai chi', 'fit', 'strength', 'walk', 'cardio'], ageRequirement: { min: 60 } },
+      { id: 'older-adult-sports', name: 'Older Adult Sports', keywords: ['pickleball', 'basketball', 'badminton', 'volleyball', 'soccer', 'tennis', 'table tennis', 'multi-sport', 'hockey', 'shinny', 'sport', 'baseball', 'dodgeball', 'tennis', 'skateboarding', 'cricket', 'golf'], ageRequirement: { min: 60 } },  
+      { id: 'older-adult-skating', name: 'Older Adult Skating & Ice Sports', keywords: ['shinny', 'skate', 'hockey'], exclusions: ['ball hockey', 'skateboard'], ageRequirement: { min: 60 } },     
+      { id: 'other-older-adult', name: 'Other Older Adult Programs', keywords: ['older adult', 'osteo'], ageRequirement: { min: 60 },  isFallback: true }
+    ]
+  },
+  {
     id: 'skating',
     name: 'Skating & Ice Sports',
     fallbackIcon: 'ice_skating',
     subcategories: [        
-      { id: 'hockey', name: 'Hockey', keywords: ['hockey', 'shinny'] },
+      { id: 'hockey', name: 'Hockey', keywords: ['hockey', 'shinny'], exclusions: ['ball hockey'] },
       { id: 'leisure-skate', name: 'Leisure Skate', keywords: ['leisure skate'] },
       { id: 'figure-skating', name: 'Figure Skating', keywords: ['figure skating'] },
       { id: 'roller-skating', name: 'Roller Skating', keywords: ['roller skating'] },
@@ -131,7 +155,6 @@ export const categories: Category[] = [
     fallbackIcon: 'support',
     subcategories: [
       { id: 'adapted', name: 'Adapted Programs', keywords: ['adapted', 'parasport'] },
-      { id: 'senior', name: 'Senior Programs', keywords: ['older adult', 'bingo'] },
       { id: 'lgbtq', name: 'LGBTQ+ Programs', keywords: ['lgbtq', '2slgbtq'] },
       { id: 'women-only', name: 'Women Only', keywords: ['women only', '(women)', 'girls'] }
     ]
@@ -169,10 +192,13 @@ export const categories: Category[] = [
     name: 'Youth Programs',
     fallbackIcon: 'group',
     subcategories: [
-      { id: 'youth-clubs', name: 'Youth Clubs', keywords: ['youth club', 'teen club', 'zone', 'homework'] },
-      { id: 'youth-arts', name: 'Youth Arts', keywords: ['youth art', 'youth craft', 'youth music', 'youth dance', 'youth creative', 'child art', 'child craft', 'child music', 'child dance', 'kids art', 'kids craft', 'kids music', 'kids dance'] },
-      { id: 'youth-leadership', name: 'Youth Leadership', keywords: ['youth leadership', 'youth council'] },
-      { id: 'other-youth', name: 'Other Youth Programs', keywords: ['youth', 'teen'], isFallback: true }
+      { id: 'youth-clubs', name: 'Youth Clubs', keywords: ['club', 'zone', 'homework'], ageRequirement: { min: 13, max: 24 } },
+      { id: 'youth-arts', name: 'Youth Arts', keywords: ['art', 'music', 'dance', 'craft'], ageRequirement: { min: 13, max: 24 } },
+      { id: 'youth-fitness', name: 'Youth Fitness & Wellness', keywords: ['gym', 'cardio', 'wellness'], ageRequirement: { min: 13, max: 24 } },
+      { id: 'youth-leadership', name: 'Youth Leadership', keywords: ['youth leadership', 'youth council'], ageRequirement: { min: 13, max: 24 } },
+      { id: 'youth-sports', name: 'Youth Sports', keywords: ['sport', 'baseball', 'basketball', 'volleyball', 'badminton', 'soccer', 'dodgeball', 'tennis', 'skateboarding', 'cricket', 'golf', 'hockey', 'shinny'], ageRequirement: { min: 13, max: 24 } },
+      { id: 'youth-skating', name: 'Youth Skating & Ice Sports', keywords: ['shinny', 'skate', 'hockey'], exclusions: ['ball hockey', 'skateboard'] , ageRequirement: { min: 13, max: 24 } },
+      { id: 'other-youth', name: 'Other Youth Programs', keywords: ['youth', 'teen', 'young'], ageRequirement: { min: 13, max: 24 }, isFallback: true }
     ]
   },
 ];
@@ -330,11 +356,130 @@ export const categorizeCourse = (courseTitle: string, ageMin?: string, ageMax?: 
 
 // Function to check if a course title matches a specific category/subcategory
 export const courseMatchesCategory = (courseTitle: string, categoryId: string, subcategoryId?: string, ageMin?: string, ageMax?: string): boolean => {
-  const categorizations = categorizeCourse(courseTitle, ageMin, ageMax);
-  
   if (subcategoryId) {
-    return categorizations.some(cat => cat.category === categoryId && cat.subcategory === subcategoryId);
+    // Find the specific subcategory
+    const category = categories.find(cat => cat.id === categoryId);
+    const subcategory = category?.subcategories.find(sub => sub.id === subcategoryId);
+    
+    if (!subcategory) {
+      return false;
+    }
+    
+    const lowerTitle = courseTitle.toLowerCase();
+    
+    // Check for exclusions first (if any exclusions match, reject immediately)
+    if (subcategory.exclusions && subcategory.exclusions.some((exclusion: string) => 
+      lowerTitle.includes(exclusion.toLowerCase())
+    )) {
+      return false;
+    }
+    
+    // For fallback subcategories, check if any other specific subcategory would match
+    if (subcategory.isFallback && category) {
+      // Parse age once for efficiency
+      const courseAgeMin = ageMin ? parseInt(ageMin) : 0;
+      const courseAgeMax = ageMax === "None" ? 999 : (ageMax ? parseInt(ageMax) : 999);
+      
+      // Check if this fallback subcategory has age requirements
+      let meetsFallbackAgeRequirement = true;
+      if (subcategory.ageRequirement) {
+        const { min: requiredMin, max: requiredMax } = subcategory.ageRequirement;
+        if (requiredMin && courseAgeMin < requiredMin) meetsFallbackAgeRequirement = false;
+        if (requiredMax && courseAgeMax > requiredMax) meetsFallbackAgeRequirement = false;
+      }
+      
+      // If fallback has age requirements and doesn't meet them, reject
+      if (subcategory.ageRequirement && !meetsFallbackAgeRequirement) {
+        return false;
+      }
+      
+      // If fallback has no age requirements, check keyword matching
+      if (!subcategory.ageRequirement) {
+        const matchesKeywords = subcategory.keywords.some(keyword => 
+          lowerTitle.includes(keyword.toLowerCase())
+        );
+        
+        if (!matchesKeywords) {
+          return false;
+        }
+      }
+      
+      // For fallback subcategories with age requirements, allow programs that meet age requirements
+      // even if they don't match keywords (as long as no other specific subcategory would match)
+      
+      // Get other non-fallback subcategories once
+      const otherSubcategories = category.subcategories.filter(sub => 
+        !sub.isFallback && sub.id !== subcategoryId && sub.keywords.length > 0
+      );
+      
+      // Early exit if no other subcategories to check
+      if (otherSubcategories.length === 0) {
+        return true;
+      }
+      
+      for (const otherSub of otherSubcategories) {
+        // Quick keyword check first (most likely to fail)
+        const otherMatchesKeywords = otherSub.keywords.some(keyword => 
+          lowerTitle.includes(keyword.toLowerCase())
+        );
+        
+        if (!otherMatchesKeywords) continue;
+        
+        // Check exclusions (quick check)
+        const hasExclusions = otherSub.exclusions && otherSub.exclusions.some((exclusion: string) => 
+          lowerTitle.includes(exclusion.toLowerCase())
+        );
+        
+        if (hasExclusions) continue;
+        
+        // Check age requirements (only if needed)
+        if (otherSub.ageRequirement) {
+          const { min: requiredMin, max: requiredMax } = otherSub.ageRequirement;
+          
+          if (requiredMin && courseAgeMin < requiredMin) continue;
+          if (requiredMax && courseAgeMax > requiredMax) continue;
+        }
+        
+        // Another specific subcategory would match, so this fallback shouldn't match
+        return false;
+      }
+    }
+    
+    // For non-fallback subcategories, check keyword matching
+    if (!subcategory.isFallback) {
+      const matchesKeywords = subcategory.keywords.some(keyword => 
+        lowerTitle.includes(keyword.toLowerCase())
+      );
+      
+      if (!matchesKeywords) {
+        return false;
+      }
+    }
+    
+    // Check if the subcategory has age requirements
+    if (subcategory.ageRequirement) {
+      // Parse the course's age requirements
+      const courseAgeMin = ageMin ? parseInt(ageMin) : 0;
+      const courseAgeMax = ageMax === "None" ? 999 : (ageMax ? parseInt(ageMax) : 999);
+      
+      // Check if the course's age range meets the subcategory's age requirements
+      const { min: requiredMin, max: requiredMax } = subcategory.ageRequirement;
+      
+      // For senior-sports: course must be for ages 60+ (courseAgeMin >= 60)
+      if (requiredMin && courseAgeMin < requiredMin) {
+        return false;
+      }
+      
+      // For youth programs: course must be for ages under the max (courseAgeMax <= requiredMax)
+      if (requiredMax && courseAgeMax > requiredMax) {
+        return false;
+      }
+    }
+    
+    return true;
   } else {
+    // For category-only matching, use the existing logic
+    const categorizations = categorizeCourse(courseTitle, ageMin, ageMax);
     return categorizations.some(cat => cat.category === categoryId);
   }
 };
@@ -416,23 +561,30 @@ export const getCourseTitlesForCategory = (
 
 
 // Function to get the icon for a specific program title
-export const getProgramIcon = (programTitle: string): string => {
+export const getProgramIcon = (programTitle: string, ageMin?: string, ageMax?: string): string => {
   const lowerTitle = programTitle.toLowerCase();
   
-  // Check for specific program icon mappings
+  // Check for specific program icon mappings first
   for (const mapping of programIconMappings) {
     if (mapping.keywords.some(keyword => lowerTitle.includes(keyword))) {
       return mapping.icon;
     }
   }
   
-  // Fallback to category-based icons
-  const categorizations = categorizeCourse(programTitle);
-  
-  if (categorizations.length > 0) {
-    const { category } = categorizations[0];
-    const categoryObj = categories.find(cat => cat.id === category);
-    return categoryObj?.fallbackIcon || 'sports';
+  // Find the best matching category using the new logic
+  for (const category of categories) {
+    // Check each subcategory first (more specific)
+    for (const subcategory of category.subcategories) {
+      if (courseMatchesCategory(programTitle, category.id, subcategory.id, ageMin, ageMax)) {
+        // Use the category's fallback icon for subcategories
+        return category.fallbackIcon;
+      }
+    }
+    
+    // Check if it matches the category without subcategory (less specific)
+    if (courseMatchesCategory(programTitle, category.id, undefined, ageMin, ageMax)) {
+      return category.fallbackIcon;
+    }
   }
   
   // Final fallback

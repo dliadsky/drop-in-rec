@@ -3,7 +3,7 @@ import SearchForm from './components/SearchForm';
 import SearchResults from './components/SearchResults';
 import LocationMap from './components/LocationMap';
 import { getAllResources, getDayOfWeek, formatTimeForComparison, formatTimeStringForComparison, isDateInRange, normalizeDatePickerValue } from './services/api';
-import { categorizeCourse } from './services/categories';
+import { categorizeCourse, courseMatchesCategory, categories } from './services/categories';
 import { loadGeoJSONData, createLocationURLMap, createLocationCoordsMap } from './services/geojson';
 
 // Helper function to get current date in YYYY-MM-DD format
@@ -90,6 +90,8 @@ interface SearchResult {
   category?: string;
   subcategory?: string;
   ageRange?: string;
+  "Age Min"?: string;
+  "Age Max"?: string;
 }
 
 interface Location {
@@ -313,27 +315,33 @@ function App() {
 
       // Filter by category/subcategory first
       if (currentFilters.category) {
-        // For category filtering, we need to check each program individually
-        // because age-based categorization happens at the program level
+        // Use the new courseMatchesCategory function with age filtering
         filteredResults = filteredResults.filter(dropIn => {
-          const categorizations = categorizeCourse(dropIn["Course Title"], dropIn["Age Min"], dropIn["Age Max"]);
+          const courseTitle = dropIn["Course Title"];
+          if (!courseTitle) return false;
           
           if (currentFilters.subcategory) {
-            // Both category and subcategory specified
-            return categorizations.some(cat => 
-              cat.category === currentFilters.category && cat.subcategory === currentFilters.subcategory
-            );
+            // Both category and subcategory specified - use additive age filtering
+            return courseMatchesCategory(courseTitle, currentFilters.category, currentFilters.subcategory, dropIn["Age Min"], dropIn["Age Max"]);
           } else {
             // Only category specified
-            return categorizations.some(cat => cat.category === currentFilters.category);
+            return courseMatchesCategory(courseTitle, currentFilters.category, undefined, dropIn["Age Min"], dropIn["Age Max"]);
           }
         });
       } else if (currentFilters.subcategory) {
         // When no category is selected but a subcategory is, filter by that subcategory across all categories
-        filteredResults = filteredResults.filter(dropIn => {
-          const categorizations = categorizeCourse(dropIn["Course Title"], dropIn["Age Min"], dropIn["Age Max"]);
-          return categorizations.some(cat => cat.subcategory === currentFilters.subcategory);
-        });
+        // Find which category this subcategory belongs to
+        const parentCategory = categories.find(cat => 
+          cat.subcategories.some(sub => sub.id === currentFilters.subcategory)
+        );
+        
+        if (parentCategory) {
+          filteredResults = filteredResults.filter(dropIn => {
+            const courseTitle = dropIn["Course Title"];
+            if (!courseTitle) return false;
+            return courseMatchesCategory(courseTitle, parentCategory.id, currentFilters.subcategory, dropIn["Age Min"], dropIn["Age Max"]);
+          });
+        }
       }
 
       // Filter by specific course title (if selected)
@@ -448,7 +456,9 @@ function App() {
           locationAddress: locationAddress,
           category: primaryCategory?.category,
           subcategory: primaryCategory?.subcategory,
-          ageRange: ageRange
+          ageRange: ageRange,
+          "Age Min": dropIn["Age Min"],
+          "Age Max": dropIn["Age Max"]
         };
       });
 

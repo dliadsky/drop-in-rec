@@ -25,6 +25,8 @@ interface SearchResult {
   category?: string;
   subcategory?: string;
   ageRange?: string;
+  "Age Min"?: string;
+  "Age Max"?: string;
 }
 
 // Helper function to format date for display without timezone issues
@@ -156,7 +158,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, hasSe
       <div className="border-t border-slate-200 px-3 sm:px-4 py-3 flex-shrink-0">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold">Results ({results.length})</h3>
-          <div className="relative z-20">
+          <div className="relative z-10">
             <button className="flex items-center gap-1.5 rounded-lg bg-[#f6f7f8] px-3 py-1.5 text-sm font-medium hover:bg-slate-200 transition-colors">
               <span className="truncate">
                 {sortOrder === 'alphabetical' ? 'Alphabetical' : 
@@ -165,7 +167,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, hasSe
               <span className="material-symbols-outlined text-base"> expand_more </span>
             </button>
             <select
-              className="absolute inset-0 opacity-0 cursor-pointer z-20"
+              className="absolute inset-0 opacity-0 cursor-pointer z-10"
               value={sortOrder}
               onChange={(e) => onSortOrderChange(e.target.value as 'alphabetical' | 'earliest' | 'latest')}
             >
@@ -201,7 +203,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, hasSe
                       ? 'bg-[#13a4ec]/20 text-[#13a4ec]' 
                       : 'bg-[#13a4ec]/10 text-[#13a4ec]'
                   }`}>
-                    <span className="material-symbols-outlined">{getProgramIcon(result.courseTitle)}</span>
+                    <span className="material-symbols-outlined">{getProgramIcon(result.courseTitle, result["Age Min"], result["Age Max"])}</span>
                   </div>
                   {result.ageRange && (
                     <p className={`text-xs mt-1 text-center w-full ${

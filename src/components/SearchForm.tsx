@@ -106,6 +106,11 @@ const SearchForm: React.FC<SearchFormProps> = ({
   // State for autocomplete dropdowns
   const [showProgramDropdown, setShowProgramDropdown] = useState(false);
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  
+  // State for infinite scrolling
+  const [programDropdownPage, setProgramDropdownPage] = useState(1);
+  const [locationDropdownPage, setLocationDropdownPage] = useState(1);
+  const ITEMS_PER_PAGE = 30;
 
   // Sync search inputs with filters
   React.useEffect(() => {
@@ -152,6 +157,26 @@ const SearchForm: React.FC<SearchFormProps> = ({
       onSearch(newFilters);
     }
   }, [filters, onFiltersChange, onSearch]);
+
+  // Debounced search input change for better performance
+  const [debouncedProgramInput, setDebouncedProgramInput] = React.useState('');
+  
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedProgramInput(searchInputs.program);
+    }, 150); // 150ms debounce
+    
+    return () => clearTimeout(timer);
+  }, [searchInputs.program]);
+
+  // Reset pagination when search changes
+  React.useEffect(() => {
+    setProgramDropdownPage(1);
+  }, [debouncedProgramInput, filters.category, filters.subcategory]);
+
+  React.useEffect(() => {
+    setLocationDropdownPage(1);
+  }, [searchInputs.location]);
 
   const handleClearField = React.useCallback((field: keyof typeof searchInputs) => {
     // Clear the field
@@ -257,37 +282,55 @@ const SearchForm: React.FC<SearchFormProps> = ({
     return locationSet;
   }, [allDropIns, allLocations]);
 
-  // Filter options for autocomplete
-  const filteredProgramOptions = React.useMemo(() => {
-    // First filter by category/subcategory if selected
-    let filteredByCategory = courseTitles;
-    if (filters.category) {
-      if (filters.subcategory) {
-        // Filter by specific subcategory
-        filteredByCategory = courseTitles.filter(title => 
-          courseMatchesCategory(title, filters.category, filters.subcategory)
-        );
-      } else {
-        // Filter by category (all subcategories)
-        filteredByCategory = courseTitles.filter(title => 
-          courseMatchesCategory(title, filters.category)
-        );
-      }
+  // Pre-filter by category/subcategory (expensive operation, memoized separately)
+  const categoryFilteredPrograms = React.useMemo(() => {
+    if (!filters.category) {
+      return courseTitles;
     }
     
-    // Then filter by search text (if any)
-    if (searchInputs.program) {
-      filteredByCategory = filteredByCategory.filter(title => 
-        title.toLowerCase().includes(searchInputs.program.toLowerCase())
+    if (filters.subcategory) {
+      // Filter by specific subcategory - need to check against actual drop-in data for age filtering
+      return allDropIns
+        .filter(dropIn => {
+          const courseTitle = dropIn["Course Title"];
+          if (!courseTitle) return false;
+          return courseMatchesCategory(courseTitle, filters.category, filters.subcategory, dropIn["Age Min"], dropIn["Age Max"]);
+        })
+        .map(dropIn => dropIn["Course Title"])
+        .filter((title, index, self) => self.indexOf(title) === index); // Remove duplicates
+    } else {
+      // Filter by category (all subcategories)
+      return courseTitles.filter(title => 
+        courseMatchesCategory(title, filters.category)
+      );
+    }
+  }, [courseTitles, filters.category, filters.subcategory, allDropIns]);
+
+  // Get all filtered programs (without pagination)
+  const allFilteredPrograms = React.useMemo(() => {
+    let filtered = categoryFilteredPrograms;
+    
+    // Filter by search text (if any) - this is fast
+    if (debouncedProgramInput) {
+      const searchLower = debouncedProgramInput.toLowerCase();
+      filtered = filtered.filter(title => 
+        title.toLowerCase().includes(searchLower)
       );
     }
     
-    return filteredByCategory
-      .sort((a, b) => a.localeCompare(b))
-      .slice(0, 30); // Limit to 30 options
-  }, [courseTitles, searchInputs.program, filters.category, filters.subcategory]);
+    return filtered.sort((a, b) => a.localeCompare(b));
+  }, [categoryFilteredPrograms, debouncedProgramInput]);
 
-  const filteredLocationOptions = React.useMemo(() => {
+  // Get paginated program options
+  const filteredProgramOptions = React.useMemo(() => {
+    const startIndex = 0;
+    const endIndex = programDropdownPage * ITEMS_PER_PAGE;
+    return allFilteredPrograms.slice(startIndex, endIndex);
+  }, [allFilteredPrograms, programDropdownPage]);
+
+
+  // Get all filtered locations (without pagination)
+  const allFilteredLocations = React.useMemo(() => {
     // Filter to only include locations that have programs
     let filtered = locations.filter(location => 
       locationsWithPrograms.has(location)
@@ -300,10 +343,34 @@ const SearchForm: React.FC<SearchFormProps> = ({
       );
     }
     
-    return filtered
-      .sort((a, b) => a.localeCompare(b))
-      .slice(0, 30); // Limit to 30 options
+    return filtered.sort((a, b) => a.localeCompare(b));
   }, [locations, searchInputs.location, locationsWithPrograms]);
+
+  // Get paginated location options
+  const filteredLocationOptions = React.useMemo(() => {
+    const startIndex = 0;
+    const endIndex = locationDropdownPage * ITEMS_PER_PAGE;
+    return allFilteredLocations.slice(startIndex, endIndex);
+  }, [allFilteredLocations, locationDropdownPage]);
+
+  // Handle scroll for infinite loading
+  const handleProgramDropdownScroll = React.useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    const isNearBottom = scrollTop + clientHeight >= scrollHeight - 10; // 10px threshold
+    
+    if (isNearBottom && filteredProgramOptions.length < allFilteredPrograms.length) {
+      setProgramDropdownPage(prev => prev + 1);
+    }
+  }, [filteredProgramOptions.length, allFilteredPrograms.length]);
+
+  const handleLocationDropdownScroll = React.useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    const isNearBottom = scrollTop + clientHeight >= scrollHeight - 10; // 10px threshold
+    
+    if (isNearBottom && filteredLocationOptions.length < allFilteredLocations.length) {
+      setLocationDropdownPage(prev => prev + 1);
+    }
+  }, [filteredLocationOptions.length, allFilteredLocations.length]);
 
   // Helper function to convert 24-hour time to 12-hour AM/PM format
   const formatTimeToAMPM = (time24: string): string => {
@@ -546,8 +613,11 @@ const SearchForm: React.FC<SearchFormProps> = ({
           )}
           
           {/* Program Autocomplete Dropdown */}
-          {showProgramDropdown && filteredProgramOptions.length > 0 && (
-            <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+          {showProgramDropdown && (filteredProgramOptions.length > 0 || allFilteredPrograms.length > 0) && (
+            <div 
+              className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto"
+              onScroll={handleProgramDropdownScroll}
+            >
               {filteredProgramOptions.map((option, index) => (
                 <div
                   key={index}
@@ -587,8 +657,11 @@ const SearchForm: React.FC<SearchFormProps> = ({
           )}
           
           {/* Location Autocomplete Dropdown */}
-          {showLocationDropdown && filteredLocationOptions.length > 0 && (
-            <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+          {showLocationDropdown && (filteredLocationOptions.length > 0 || allFilteredLocations.length > 0) && (
+            <div 
+              className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto"
+              onScroll={handleLocationDropdownScroll}
+            >
               {filteredLocationOptions.map((option, index) => (
                 <div
                   key={index}
