@@ -96,7 +96,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, hasSe
 
   if (isLoading) {
     return (
-      <div className="flex flex-col h-full lg:h-full max-h-96 lg:max-h-none">
+      <div className="flex flex-col h-full lg:h-full min-h-[600px] lg:min-h-0 max-h-96 lg:max-h-none">
         <div className="border-t border-slate-200 px-3 sm:px-4 py-3 flex-shrink-0">
           <h3 className="text-base font-semibold">Searching...</h3>
         </div>
@@ -115,7 +115,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, hasSe
 
   if (!hasSearched) {
     return (
-      <div className="flex flex-col h-full lg:h-full max-h-96 lg:max-h-none">
+      <div className="flex flex-col h-full lg:h-full min-h-[600px] lg:min-h-0 max-h-96 lg:max-h-none">
         <div className="border-t border-slate-200 px-3 sm:px-4 py-3 flex-shrink-0">
           <h3 className="text-base font-semibold">Search Results</h3>
         </div>
@@ -133,7 +133,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, hasSe
 
   if (results.length === 0) {
     return (
-      <div className="flex flex-col h-full lg:h-full max-h-96 lg:max-h-none">
+      <div className="flex flex-col h-full lg:h-full min-h-[600px] lg:min-h-0 max-h-96 lg:max-h-none">
         <div className="border-t border-slate-200 px-3 sm:px-4 py-3 flex-shrink-0">
           <h3 className="text-base font-semibold">Results (0)</h3>
         </div>
@@ -152,11 +152,11 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, hasSe
 
 
   return (
-    <div className="flex flex-col h-full lg:h-full max-h-96 lg:max-h-none">
+    <div className="flex flex-col h-full lg:h-full min-h-[600px] lg:min-h-0 max-h-96 lg:max-h-none">
       <div className="border-t border-slate-200 px-3 sm:px-4 py-3 flex-shrink-0">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold">Results ({results.length})</h3>
-          <div className="relative">
+          <div className="relative z-20">
             <button className="flex items-center gap-1.5 rounded-lg bg-[#f6f7f8] px-3 py-1.5 text-sm font-medium hover:bg-slate-200 transition-colors">
               <span className="truncate">
                 {sortOrder === 'alphabetical' ? 'Alphabetical' : 
@@ -165,7 +165,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, hasSe
               <span className="material-symbols-outlined text-base"> expand_more </span>
             </button>
             <select
-              className="absolute inset-0 opacity-0 cursor-pointer"
+              className="absolute inset-0 opacity-0 cursor-pointer z-20"
               value={sortOrder}
               onChange={(e) => onSortOrderChange(e.target.value as 'alphabetical' | 'earliest' | 'latest')}
             >

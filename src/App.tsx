@@ -540,25 +540,26 @@ function App() {
             </div>
           </aside>
 
-          {/* Map - Full width on mobile, right side on desktop */}
-          <main className="flex-1 min-h-0">
-            <div className="relative h-full w-full">
+          {/* Map and Results - Full width on mobile, right side on desktop */}
+          <main className="flex-1 min-h-0 flex flex-col lg:block">
+            {/* Map - Above results on mobile, full area on desktop */}
+            <div className="relative h-[300px] lg:h-full w-full">
               <LocationMap key={mapKey} locations={mapLocations} isLoading={isLoading} selectedLocation={selectedLocation} onLocationSelect={handleLocationSelect} />
             </div>
+            
+            {/* Mobile Results - Below map on mobile, hidden on desktop */}
+            <div className="lg:hidden flex-1 min-h-0">
+              <SearchResults
+                results={results}
+                isLoading={isLoading}
+                hasSearched={hasSearched}
+                onLocationSelect={handleLocationSelect}
+                selectedLocation={selectedLocation}
+                sortOrder={sortOrder}
+                onSortOrderChange={setSortOrder}
+              />
+            </div>
           </main>
-        </div>
-
-        {/* Mobile Results - Bottom sheet on mobile */}
-        <div className="lg:hidden">
-          <SearchResults
-            results={results}
-            isLoading={isLoading}
-            hasSearched={hasSearched}
-            onLocationSelect={handleLocationSelect}
-            selectedLocation={selectedLocation}
-            sortOrder={sortOrder}
-            onSortOrderChange={setSortOrder}
-          />
         </div>
       </div>
       </div>
