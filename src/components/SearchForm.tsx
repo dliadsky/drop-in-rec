@@ -210,6 +210,19 @@ const SearchForm: React.FC<SearchFormProps> = ({
     onClearResults();
   }, [onFiltersChange, onClearResults]);
 
+  // Pre-compute locations that have programs (memoized separately for performance)
+  const locationsWithPrograms = React.useMemo(() => {
+    const locationSet = new Set<string>();
+    allDropIns.forEach(dropIn => {
+      const locationId = dropIn["Location ID"];
+      const location = allLocations.find(loc => loc["Location ID"] === locationId);
+      if (location?.["Location Name"]) {
+        locationSet.add(location["Location Name"]);
+      }
+    });
+    return locationSet;
+  }, [allDropIns, allLocations]);
+
   // Filter options for autocomplete
   const filteredProgramOptions = React.useMemo(() => {
     // First filter by category/subcategory if selected
@@ -241,16 +254,9 @@ const SearchForm: React.FC<SearchFormProps> = ({
   }, [courseTitles, searchInputs.program, filters.category, filters.subcategory]);
 
   const filteredLocationOptions = React.useMemo(() => {
-    // Get locations that actually have programs (any programs, not just this week)
-    const locationsWithPrograms = [...new Set(allDropIns.map(dropIn => {
-      const locationId = dropIn["Location ID"];
-      const location = allLocations.find(loc => loc["Location ID"] === locationId);
-      return location?.["Location Name"];
-    }).filter(Boolean))];
-    
     // Filter to only include locations that have programs
     let filtered = locations.filter(location => 
-      locationsWithPrograms.includes(location)
+      locationsWithPrograms.has(location)
     );
     
     // Filter by search text (if any)
@@ -263,7 +269,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
     return filtered
       .sort((a, b) => a.localeCompare(b))
       .slice(0, 30); // Limit to 30 options
-  }, [locations, searchInputs.location, allDropIns, allLocations]);
+  }, [locations, searchInputs.location, locationsWithPrograms]);
 
   // Helper function to convert 24-hour time to 12-hour AM/PM format
   const formatTimeToAMPM = (time24: string): string => {
@@ -494,7 +500,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
             onChange={(e) => handleSearchInputChange('program', e.target.value)}
             onKeyPress={(e) => handleKeyPress(e, 'program')}
             onFocus={() => setShowProgramDropdown(true)}
-            onBlur={() => setTimeout(() => setShowProgramDropdown(false), 200)}
+            onBlur={() => setTimeout(() => setShowProgramDropdown(false), 150)}
           />
           {searchInputs.program && (
             <button 
@@ -512,7 +518,10 @@ const SearchForm: React.FC<SearchFormProps> = ({
                 <div
                   key={index}
                   className="px-3 py-2 cursor-pointer hover:bg-gray-50 text-sm"
-                  onClick={() => handleOptionSelect('program', option)}
+                  onMouseDown={(e) => {
+                    e.preventDefault() // Prevent input from losing focus
+                    handleOptionSelect('program', option);
+                  }}
                 >
                   {option}
                 </div>
@@ -532,7 +541,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
             onChange={(e) => handleSearchInputChange('location', e.target.value)}
             onKeyPress={(e) => handleKeyPress(e, 'location')}
             onFocus={() => setShowLocationDropdown(true)}
-            onBlur={() => setTimeout(() => setShowLocationDropdown(false), 200)}
+            onBlur={() => setTimeout(() => setShowLocationDropdown(false), 150)}
           />
           {searchInputs.location && (
             <button 
@@ -550,7 +559,10 @@ const SearchForm: React.FC<SearchFormProps> = ({
                 <div
                   key={index}
                   className="px-3 py-2 cursor-pointer hover:bg-gray-50 text-sm"
-                  onClick={() => handleOptionSelect('location', option)}
+                  onMouseDown={(e) => {
+                    e.preventDefault() // Prevent input from losing focus
+                    handleOptionSelect('location', option);
+                  }}
                 >
                   {option}
                 </div>

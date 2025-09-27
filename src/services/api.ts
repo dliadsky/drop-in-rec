@@ -42,7 +42,7 @@ export const loadLocations = async (): Promise<Location[]> => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    console.log('Loaded locations:', data.length);
+    // console.log('Loaded locations:', data.length); // Removed for performance
     return data;
   } catch (error) {
     console.error('Error loading locations:', error);
@@ -57,7 +57,7 @@ export const loadDropIns = async (): Promise<DropInRecord[]> => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    console.log('Loaded drop-ins:', data.length);
+    // console.log('Loaded drop-ins:', data.length); // Removed for performance
     return data;
   } catch (error) {
     console.error('Error loading drop-ins:', error);
@@ -163,7 +163,7 @@ const getMockData = (): { locations: Location[], dropIns: DropInRecord[] } => {
 // Get all available resources and their data
 export const getAllResources = async (): Promise<{ locations: Location[], dropIns: DropInRecord[] }> => {
   try {
-    console.log('Loading data from local JSON files...');
+    // console.log('Loading data from local JSON files...'); // Removed for performance
     
     // Load both datasets in parallel
     const [locations, dropIns] = await Promise.all([
@@ -171,13 +171,13 @@ export const getAllResources = async (): Promise<{ locations: Location[], dropIn
       loadDropIns()
     ]);
     
-    console.log('Successfully loaded data from local files');
-    console.log(`Locations: ${locations.length}, Drop-ins: ${dropIns.length}`);
+    // console.log('Successfully loaded data from local files'); // Removed for performance
+    // console.log(`Locations: ${locations.length}, Drop-ins: ${dropIns.length}`); // Removed for performance
     
     return { locations, dropIns };
   } catch (error) {
     console.error('Error loading data from local files:', error);
-    console.log('Falling back to mock data for development...');
+    // console.log('Falling back to mock data for development...'); // Removed for performance
     
     // Return mock data as fallback
     return getMockData();

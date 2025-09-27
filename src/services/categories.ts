@@ -4,7 +4,7 @@ export interface Category {
   id: string;
   name: string;
   subcategories: Subcategory[];
-  icon: string; // Material symbol icon for the category
+  fallbackIcon: string; // Fallback icon for programs in this category
 }
 
 export interface Subcategory {
@@ -13,126 +13,171 @@ export interface Subcategory {
   keywords: string[];
   exclusions?: string[]; // Keywords that should prevent matching if present in the title
   isFallback?: boolean; // If true, only matches when no other subcategory in the same category matches
-  icon?: string; // Material symbol icon for the subcategory (optional, falls back to category icon)
 }
+
+
+// Program icon mappings for specific program names
+export const programIconMappings: Array<{ keywords: string[]; icon: string }> = [
+  // Sports
+  { keywords: ['basketball'], icon: 'sports_basketball' },
+  { keywords: ['soccer'], icon: 'sports_soccer' },
+  { keywords: ['volleyball'], icon: 'sports_volleyball' },
+  { keywords: ['badminton'], icon: 'badminton' },
+  { keywords: ['pickleball'], icon: 'pickleball' },
+  { keywords: ['table tennis'], icon: 'padel' },
+  { keywords: ['hockey'], icon: 'sports_hockey' },
+  
+  // Swimming & Aquatics
+  { keywords: ['swimming', 'swim', 'aquatic fitness'], icon: 'pool' },
+  
+  // Fitness & Wellness
+  { keywords: ['yoga'], icon: 'self_improvement' },
+  { keywords: ['pilates'], icon: 'self_improvement' },
+  { keywords: ['tai chi'], icon: 'taunt' },
+  { keywords: ['strength', 'gym'], icon: 'fitness_center' },
+  { keywords: ['walk'], icon: 'directions_walk' },
+  
+  // Arts & Crafts
+  { keywords: ['dance', 'zumba'], icon: 'taunt' },
+  { keywords: ['music'], icon: 'music_note' },
+  { keywords: ['photography'], icon: 'photo_camera' },
+  
+  // Games & Recreation
+  { keywords: ['archery'], icon: 'target' },
+  { keywords: ['bocce'], icon: 'scatter_plot' },
+  { keywords: ['bowling'], icon: 'circle' },
+  { keywords: ['bingo'], icon: 'casino' },
+  { keywords: ['chess'], icon: 'chess_knight' },
+  { keywords: ['cards'], icon: 'playing_cards' },
+  { keywords: ['chop it'], icon: 'chef_hat' },
+  { keywords: ['snooker'], icon: 'counter_8' },
+  { keywords: ['darts'], icon: 'target' },
+  { keywords: ['game'], icon: 'Ifl' },
+  { keywords: ['video game', 'gaming'], icon: 'videogame_asset' }
+];
 
 export const categories: Category[] = [
   {
     id: 'arts-crafts',
     name: 'Arts & Crafts',
-    icon: 'palette',
+    fallbackIcon: 'palette',
     subcategories: [
-      { id: 'visual-arts', name: 'Visual Arts', keywords: ['painting', 'drawing', 'photography', 'visual art'], exclusions: ['arthritis', 'arthritic'], icon: 'palette' },
-      { id: 'crafts', name: 'Crafts', keywords: ['craft', 'sewing', 'knitting', 'crochet', 'quilting', 'decoupage'], icon: 'palette' },
-      { id: 'music', name: 'Music', keywords: ['music', 'band', 'choir', 'drumming', 'karaoke', 'drum', 'open mic'], exclusions: ['no music'], icon: 'music_note' },
-      { id: 'dance', name: 'Dance', keywords: ['dance', 'tango', 'ballroom', 'hip hop', 'line dance', 'vogue'], icon: 'taunt' },
-      { id: 'creative-writing', name: 'Creative Writing', keywords: ['creative writing', 'writing'], icon: 'edit' },
-      { id: 'other-arts', name: 'Other Arts Programs', keywords: ['art', 'bunka', 'colouring', 'jewellery making'], exclusions: ['arthritis', 'martial arts'], isFallback: true, icon: 'palette' }
+      { id: 'visual-arts', name: 'Visual Arts', keywords: ['painting', 'drawing', 'photography', 'visual art', 'design'], exclusions: ['arthritis', 'arthritic'] },
+      { id: 'crafts', name: 'Crafts', keywords: ['craft', 'sewing', 'knitting', 'crochet', 'quilting', 'decoupage'] },
+      { id: 'music', name: 'Music', keywords: ['music', 'band', 'choir', 'drumming', 'karaoke', 'drum', 'open mic'], exclusions: ['no music'] },
+      { id: 'dance', name: 'Dance', keywords: ['dance', 'tango', 'ballroom', 'hip hop', 'line dance', 'vogue'] },
+      { id: 'creative-writing', name: 'Creative Writing', keywords: ['creative writing', 'writing'] },
+      { id: 'other-arts', name: 'Other Arts Programs', keywords: ['art', 'bunka', 'colouring', 'jewellery making'], exclusions: ['arthritis', 'martial arts'], isFallback: true }
     ]
   },
   {
     id: 'family',
     name: 'Family',
-    icon: 'family_restroom',
+    fallbackIcon: 'family_restroom',
     subcategories: [
-      { id: 'family-swim', name: 'Family Swim', keywords: ['family swim'  ], icon: 'pool' },
-      { id: 'family-sports', name: 'Family Sports', keywords: ['basketball with family', 'badminton with family', 'pickleball with family', 'soccer with family', 'volleyball with family', 'tennis with family', 'table-tennis with family', 'skate with family', 'multi-sport with family'], icon: 'family_restroom' },
-      { id: 'family-arts', name: 'Family Arts', keywords: ['family arts'], icon: 'palette' },
-      { id: 'early-years', name: 'Early Years', keywords: ['early years', 'preschool', 'caregiver'], exclusions: ['leisure Skate: child with caregiver'], icon: 'child_care' },
-      { id: 'other-family-programs', name: 'Other Family Programs', keywords: ['family'], isFallback: true, icon: 'family_restroom' }
+      { id: 'family-swim', name: 'Family Swim', keywords: ['family swim'  ] },
+      { id: 'family-sports', name: 'Family Sports', keywords: ['basketball with family', 'badminton with family', 'pickleball with family', 'soccer with family', 'volleyball with family', 'tennis with family', 'table-tennis with family', 'skate with family', 'multi-sport with family'] },
+      { id: 'family-arts', name: 'Family Arts', keywords: ['family arts'] },
+      { id: 'early-years', name: 'Early Years', keywords: ['early years', 'preschool', 'caregiver'], exclusions: ['leisure Skate: child with caregiver'] },
+      { id: 'other-family-programs', name: 'Other Family Programs', keywords: ['family'], isFallback: true }
     ]
   },
   {
     id: 'fitness',
     name: 'Fitness & Wellness',
-    icon: 'fitness_center',
+    fallbackIcon: 'cardio_load',
     subcategories: [
-      { id: 'yoga', name: 'Yoga', keywords: ['yoga'], icon: 'self_improvement' },
-      { id: 'pilates', name: 'Pilates', keywords: ['pilates'], icon: 'self_improvement' },
-      { id: 'cardio', name: 'Cardio', keywords: ['cardio'], icon: 'cardio_load' },
-      { id: 'zumba', name: 'Zumba', keywords: ['zumba'], icon: 'taunt' },
-      { id: 'strength', name: 'Strength Training', keywords: ['strength', 'weight', 'gym'], icon: 'fitness_center' },
-      { id: 'hiit', name: 'HIIT', keywords: ['hiit', 'boot camp'], icon: 'fitness_center' },
-      { id: 'gentle-fitness', name: 'Gentle Fitness', keywords: ['gentle', 'mobility', ': chair', 'osteofit', 'tai chi', 'qigong'], icon: 'person_celebrate' },
-      { id: 'walking', name: 'Walking', keywords: ['walk', 'running track'], exclusions: ['aqua fitness'], icon: 'directions_walk' },
-      { id: 'other-fitness', name: 'Other Fitness & Wellness', keywords: ['fitness', 'wellness', 'cycle', 'fit', 'pedal', 'meditation'], isFallback: true, icon: 'fitness_center' }
+      { id: 'yoga', name: 'Yoga', keywords: ['yoga'] },
+      { id: 'pilates', name: 'Pilates', keywords: ['pilates'] },
+      { id: 'cardio', name: 'Cardio', keywords: ['cardio'] },
+      { id: 'zumba', name: 'Zumba', keywords: ['zumba'] },
+      { id: 'strength', name: 'Strength Training', keywords: ['strength', 'weight', 'gym'] },
+      { id: 'hiit', name: 'HIIT', keywords: ['hiit', 'boot camp'] },
+      { id: 'gentle-fitness', name: 'Gentle Fitness', keywords: ['gentle', 'mobility', ': chair', 'osteofit', 'tai chi', 'qigong'] },
+      { id: 'walking', name: 'Walking', keywords: ['walk', 'running track'], exclusions: ['aqua fitness'] },
+      { id: 'other-fitness', name: 'Other Fitness & Wellness', keywords: ['fitness', 'wellness', 'cycle', 'fit', 'pedal', 'meditation'], isFallback: true }
     ]
   },
   {
     id: 'games',
     name: 'Games & Recreation',
-    icon: 'toys',
+    fallbackIcon: 'toys_and_games',
     subcategories: [
-      { id: 'club', name: 'Clubs', keywords: ['club'], icon: 'groups' },
-      { id: 'board-games', name: 'Board Games', keywords: ['board games', 'games: board', 'chess'], icon: 'toys_and_games' },
-      { id: 'card-games', name: 'Card Games', keywords: ['cards', 'euchre', 'bridge', 'cribbage'], icon: 'playing_cards' },
-      { id: 'billiards', name: 'Billiards & Pool', keywords: ['billiards', 'snooker', 'pool'], icon: 'counter_8' },
-      { id: 'darts', name: 'Darts', keywords: ['darts'], icon: 'target' },
-      { id: 'video-games', name: 'Video Games', keywords: ['video game', 'gaming'], icon: 'videogame_asset' },
-      { id: 'bingo', name: 'Bingo', keywords: ['bingo'], icon: 'casino' },
-      { id: 'other-games', name: 'Other Games & Recreation', keywords: ['games', 'archery', 'bocce', 'bowling'], isFallback: true, icon: 'toys_and_games' }
+      { id: 'club', name: 'Clubs', keywords: ['club'] },
+      { id: 'board-games', name: 'Board Games', keywords: ['board games', 'games: board', 'chess'] },
+      { id: 'card-games', name: 'Card Games', keywords: ['cards', 'euchre', 'bridge', 'cribbage'] },
+      { id: 'billiards', name: 'Billiards & Pool', keywords: ['billiards', 'snooker', 'pool'] },
+      { id: 'darts', name: 'Darts', keywords: ['darts'] },
+      { id: 'video-games', name: 'Video Games', keywords: ['video game', 'gaming'] },
+      { id: 'bingo', name: 'Bingo', keywords: ['bingo'] },
+      { id: 'other-games', name: 'Other Games & Recreation', keywords: ['game', 'archery', 'bocce', 'bowling'], isFallback: true }
     ]
   },
   {
     id: 'skating',
     name: 'Skating & Ice Sports',
-    icon: 'sports',
+    fallbackIcon: 'ice_skating',
+
     subcategories: [        
-      { id: 'hockey', name: 'Hockey', keywords: ['hockey', 'shinny'], icon: 'sports_hockey' },
-      { id: 'leisure-skate', name: 'Leisure Skate', keywords: ['leisure skate'], icon: 'ice_skating' },
-      { id: 'figure-skating', name: 'Figure Skating', keywords: ['figure skating'], icon: 'ice_skating' },
-      { id: 'roller-skating', name: 'Roller Skating', keywords: ['roller skating'], icon: 'roller_skating' },
-      { id: 'other-skating', name: 'Other Skating & Ice Sports', keywords: ['skate', 'skating'], isFallback: true, icon: 'ice_skating' }
+      { id: 'hockey', name: 'Hockey', keywords: ['hockey', 'shinny'] },
+      { id: 'leisure-skate', name: 'Leisure Skate', keywords: ['leisure skate'] },
+      { id: 'figure-skating', name: 'Figure Skating', keywords: ['figure skating'] },
+      { id: 'roller-skating', name: 'Roller Skating', keywords: ['roller skating'] },
+      { id: 'other-skating', name: 'Other Skating & Ice Sports', keywords: ['skate', 'skating'], isFallback: true }
     ]
   },
   {
     id: 'specialized',
     name: 'Specialized Programs',
-    icon: 'support',
+    fallbackIcon: 'support',
+
     subcategories: [
-      { id: 'adapted', name: 'Adapted Programs', keywords: ['adapted', 'parasport'], icon: 'accessible' },
-      { id: 'senior', name: 'Senior Programs', keywords: ['older adult', 'bingo'], icon: 'sports' },
-      { id: 'lgbtq', name: 'LGBTQ+ Programs', keywords: ['lgbtq', '2slgbtq'], icon: 'group' },
-      { id: 'women-only', name: 'Women Only', keywords: ['women only', '(women)', 'girls'], icon: 'woman' }
+      { id: 'adapted', name: 'Adapted Programs', keywords: ['adapted', 'parasport'] },
+      { id: 'senior', name: 'Senior Programs', keywords: ['older adult', 'bingo'] },
+      { id: 'lgbtq', name: 'LGBTQ+ Programs', keywords: ['lgbtq', '2slgbtq'] },
+      { id: 'women-only', name: 'Women Only', keywords: ['women only', '(women)', 'girls'] }
     ]
   },
   {
     id: 'sports',
     name: 'Sports & Athletics',
-    icon: 'sports',
+    fallbackIcon: 'sports',
+
     subcategories: [
-      { id: 'basketball', name: 'Basketball', keywords: ['basketball'], icon: 'sports_basketball' },
-      { id: 'badminton', name: 'Badminton', keywords: ['badminton'], icon: 'badminton' },
-      { id: 'pickleball', name: 'Pickleball', keywords: ['pickleball'], icon: 'pickleball' },
-      { id: 'soccer', name: 'Soccer', keywords: ['soccer'], icon: 'sports_soccer' },
-      { id: 'volleyball', name: 'Volleyball', keywords: ['volleyball'], icon: 'sports_volleyball' },
-      { id: 'table-tennis', name: 'Table Tennis', keywords: ['table tennis'], icon: 'padel' },
-      { id: 'hockey', name: 'Hockey', keywords: ['hockey', 'shinny'], icon: 'sports_hockey' },
-      { id: 'multi-sport', name: 'Multi-Sport', keywords: ['multi-sport', 'multi sport'], icon: 'sports' },
-      { id: 'other-sports', name: 'Other Sports & Athletics', keywords: ['sport', 'baseball', 'dodgeball', 'tennis', 'skateboarding', 'cricket', 'golf'], isFallback: true, icon: 'sports' }
+      { id: 'basketball', name: 'Basketball', keywords: ['basketball'] },
+      { id: 'badminton', name: 'Badminton', keywords: ['badminton'] },
+      { id: 'pickleball', name: 'Pickleball', keywords: ['pickleball'] },
+      { id: 'soccer', name: 'Soccer', keywords: ['soccer'] },
+      { id: 'volleyball', name: 'Volleyball', keywords: ['volleyball'] },
+      { id: 'table-tennis', name: 'Table Tennis', keywords: ['table tennis'] },
+      { id: 'hockey', name: 'Hockey', keywords: ['hockey', 'shinny'] },
+      { id: 'multi-sport', name: 'Multi-Sport', keywords: ['multi-sport', 'multi sport'] },
+      { id: 'other-sports', name: 'Other Sports & Athletics', keywords: ['sport', 'baseball', 'dodgeball', 'tennis', 'skateboarding', 'cricket', 'golf'], isFallback: true }
     ]
   },
   {
     id: 'swimming',
     name: 'Swimming & Aquatics',
-    icon: 'pool',
+    fallbackIcon: 'pool',
+
     subcategories: [
-      { id: 'lane-swim', name: 'Lane Swim', keywords: ['lane swim'], icon: 'pool' },
-      { id: 'leisure-swim', name: 'Leisure Swim', keywords: ['leisure swim'], icon: 'pool' },
-      { id: 'family-swim', name: 'Family Swim', keywords: ['family swim'], icon: 'pool' },
-      { id: 'aquatic-fitness', name: 'Aquatic Fitness', keywords: ['aquatic fitness', 'water fitness', 'water'], icon: 'pool' },
-      { id: 'other-swimming', name: 'Other Swimming', keywords: ['swim', 'aquatic'], isFallback: true, icon: 'pool' }
+      { id: 'lane-swim', name: 'Lane Swim', keywords: ['lane swim'] },
+      { id: 'leisure-swim', name: 'Leisure Swim', keywords: ['leisure swim'] },
+      { id: 'family-swim', name: 'Family Swim', keywords: ['family swim'] },
+      { id: 'aquatic-fitness', name: 'Aquatic Fitness', keywords: ['aquatic fitness', 'water fitness', 'water'] },
+      { id: 'other-swimming', name: 'Other Swimming', keywords: ['swim', 'aquatic'], isFallback: true }
     ]
   },
   {
     id: 'youth',
     name: 'Youth Programs',
-    icon: 'group',
+    fallbackIcon: 'group',
+
     subcategories: [
-      { id: 'youth-clubs', name: 'Youth Clubs', keywords: ['youth club', 'teen club', 'zone', 'homework'], icon: 'groups' },
-      { id: 'youth-arts', name: 'Youth Arts', keywords: ['youth art', 'youth craft', 'youth music', 'youth dance', 'youth creative', 'child art', 'child craft', 'child music', 'child dance', 'kids art', 'kids craft', 'kids music', 'kids dance'], icon: 'palette' },
-      { id: 'youth-leadership', name: 'Youth Leadership', keywords: ['youth leadership', 'youth council'], icon: 'group' },
-      { id: 'other-youth', name: 'Other Youth Programs', keywords: ['youth', 'teen'], isFallback: true, icon: 'group' }
+      { id: 'youth-clubs', name: 'Youth Clubs', keywords: ['youth club', 'teen club', 'zone', 'homework'] },
+      { id: 'youth-arts', name: 'Youth Arts', keywords: ['youth art', 'youth craft', 'youth music', 'youth dance', 'youth creative', 'child art', 'child craft', 'child music', 'child dance', 'kids art', 'kids craft', 'kids music', 'kids dance'] },
+      { id: 'youth-leadership', name: 'Youth Leadership', keywords: ['youth leadership', 'youth council'] },
+      { id: 'other-youth', name: 'Other Youth Programs', keywords: ['youth', 'teen'], isFallback: true }
     ]
   },
 ];
@@ -141,7 +186,7 @@ export const categories: Category[] = [
 // Function to categorize a course title - returns all matches with hierarchical keyword matching
 export const categorizeCourse = (courseTitle: string, ageMin?: string, ageMax?: string): Array<{ category: string; subcategory: string }> => {
   const lowerTitle = courseTitle.toLowerCase();
-  const matches: Array<{ category: string; subcategory: string; keywordLength: number }> = [];
+  const matches: Array<{ category: string; subcategory: string }> = [];
   const matchedPrograms = new Set<string>(); // Track which programs have been matched
   
   // Check for age-based categorization first (but with lower priority than specific sports)
@@ -154,8 +199,7 @@ export const categorizeCourse = (courseTitle: string, ageMin?: string, ageMax?: 
       if (!matchedPrograms.has(matchKey)) {
         matches.push({ 
           category: 'specialized', 
-          subcategory: 'senior', 
-          keywordLength: 30 // Lower priority than specific sports keywords
+          subcategory: 'senior'
         });
         matchedPrograms.add(matchKey);
       }
@@ -172,8 +216,7 @@ export const categorizeCourse = (courseTitle: string, ageMin?: string, ageMax?: 
       if (!matchedPrograms.has(matchKey)) {
         matches.push({ 
           category: 'youth', 
-          subcategory: 'other-youth', 
-          keywordLength: 20 // Lower priority than specific sports keywords
+          subcategory: 'other-youth'
         });
         matchedPrograms.add(matchKey);
       }
@@ -190,8 +233,7 @@ export const categorizeCourse = (courseTitle: string, ageMin?: string, ageMax?: 
       if (!matchedPrograms.has(matchKey)) {
         matches.push({ 
           category: 'family', 
-          subcategory: 'early-years', 
-          keywordLength: 10 // Lower priority than specific sports keywords
+          subcategory: 'early-years'
         });
         matchedPrograms.add(matchKey);
       }
@@ -233,28 +275,9 @@ export const categorizeCourse = (courseTitle: string, ageMin?: string, ageMax?: 
       
       const matchKey = `${category.id}-${subcategory.id}`;
       if (!matchedPrograms.has(matchKey)) {
-        // Give sports keywords higher priority than age-based categorization
-        let priority = keyword.length;
-        
-        // Boost priority for specific categories to ensure they override age-based categorization
-        if (category.id === 'sports' && ['basketball', 'soccer', 'volleyball', 'badminton', 'pickleball', 'table-tennis', 'hockey', 'multi-sport', 'other-sports'].includes(subcategory.id)) {
-          priority += 100; // Sports get much higher priority
-        } else if (category.id === 'swimming' && ['lane-swim', 'leisure-swim', 'family-swim', 'aquatic-fitness'].includes(subcategory.id)) {
-          priority += 80; // Swimming gets high priority
-        } else if (category.id === 'fitness' && ['yoga', 'pilates', 'cardio', 'zumba', 'strength', 'hiit', 'gentle-fitness', 'walking', 'other-fitness'].includes(subcategory.id)) {
-          priority += 70; // Fitness gets high priority
-        } else if (category.id === 'skating' && ['hockey', 'leisure-skate', 'figure-skating'].includes(subcategory.id)) {
-          priority += 60; // Skating gets high priority
-        } else if (category.id === 'arts-crafts' && ['music', 'dance', 'crafts', 'creative-writing', 'visual-arts', 'other-arts'].includes(subcategory.id)) {
-          priority += 50; // Skating gets high priority
-        } else if (category.id === 'games' && ['club', 'board-games', 'card-games', 'billiards', 'darts', 'video-games', 'bingo', 'other-games'].includes(subcategory.id)) {
-          priority += 40; // Skating gets high priority
-        }
-        
         matches.push({ 
           category: category.id, 
-          subcategory: subcategory.id, 
-          keywordLength: priority
+          subcategory: subcategory.id
         });
         matchedPrograms.add(matchKey);
       }
@@ -288,8 +311,7 @@ export const categorizeCourse = (courseTitle: string, ageMin?: string, ageMax?: 
             if (!matchedPrograms.has(matchKey)) {
               matches.push({ 
                 category: category.id, 
-                subcategory: subcategory.id, 
-                keywordLength: keyword.length 
+                subcategory: subcategory.id
               });
               matchedPrograms.add(matchKey);
             }
@@ -307,10 +329,7 @@ export const categorizeCourse = (courseTitle: string, ageMin?: string, ageMax?: 
     return [];
   }
   
-  // Sort matches by priority (highest first) to ensure the best match is used for the icon
-  matches.sort((a, b) => b.keywordLength - a.keywordLength);
-  
-  // Return matches without the keywordLength property
+  // Return matches
   return matches.map(match => ({ category: match.category, subcategory: match.subcategory }));
 };
 
@@ -399,19 +418,31 @@ export const getCourseTitlesForCategory = (
   return allCourseTitles.filter(title => courseMatchesCategory(title, categoryId, subcategoryId, ageMin, ageMax));
 };
 
-// Function to get the icon for a category and subcategory
-export const getCategoryIcon = (categoryId: string, subcategoryId?: string): string => {
-  const category = categories.find(cat => cat.id === categoryId);
-  if (!category) return 'sports'; // Default fallback
+
+
+// Function to get the icon for a specific program title
+export const getProgramIcon = (programTitle: string): string => {
+  const lowerTitle = programTitle.toLowerCase();
   
-  // If subcategory is specified, try to get its icon
-  if (subcategoryId) {
-    const subcategory = category.subcategories.find(sub => sub.id === subcategoryId);
-    if (subcategory && subcategory.icon) {
-      return subcategory.icon;
+  // Check for specific program icon mappings
+  for (const mapping of programIconMappings) {
+    if (mapping.keywords.some(keyword => lowerTitle.includes(keyword))) {
+      return mapping.icon;
     }
   }
   
-  // Fall back to category icon
-  return category.icon;
+  // Fallback to category-based icons
+  const categorizations = categorizeCourse(programTitle);
+  
+  if (categorizations.length > 0) {
+    const { category } = categorizations[0];
+    const categoryObj = categories.find(cat => cat.id === category);
+    return categoryObj?.fallbackIcon || 'sports';
+  }
+  
+  // Final fallback
+  return 'sports';
 };
+
+
+

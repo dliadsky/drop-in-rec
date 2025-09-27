@@ -1,5 +1,5 @@
 import React from 'react';
-import { getCategoryIcon } from '../services/categories';
+import { getProgramIcon } from '../services/categories';
 
 // Helper function to convert 24-hour time to 12-hour AM/PM format
 const formatTimeToAMPM = (time24: string): string => {
@@ -201,7 +201,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, hasSe
                       ? 'bg-[#13a4ec]/20 text-[#13a4ec]' 
                       : 'bg-[#13a4ec]/10 text-[#13a4ec]'
                   }`}>
-                    <span className="material-symbols-outlined">{getCategoryIcon(result.category || '', result.subcategory)}</span>
+                    <span className="material-symbols-outlined">{getProgramIcon(result.courseTitle)}</span>
                   </div>
                   {result.ageRange && (
                     <p className={`text-xs mt-1 text-center w-full ${
