@@ -48,13 +48,13 @@ const getDefaultDate = (): string => {
   return getCurrentDate();
 };
 
-// Helper function to get default time - if it's late in the day, default to "Any Time"
+// Helper function to get default time - if it's late in the day or early morning, default to "Any Time"
 const getDefaultTime = (): string => {
   const now = new Date();
   const hour = now.getHours();
   
-  // If it's after 8 PM, default to "Any Time" for tomorrow
-  if (hour >= 20) {
+  // If it's after 10 PM or before 6 AM, default to "Any Time"
+  if (hour >= 22 || hour < 6) {
     return 'Any Time';
   }
   
@@ -242,6 +242,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
     // Clear the search results
     onClearResults();
   }, [onFiltersChange, onClearResults]);
+
 
   // Pre-compute locations that have programs (memoized separately for performance)
   const locationsWithPrograms = React.useMemo(() => {
