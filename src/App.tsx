@@ -750,7 +750,7 @@ function App() {
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Data source</h3>
                 <p className="text-gray-700 leading-relaxed">
-                  This tool uses <a class="text-[#13a4ec]" href="https://open.toronto.ca/catalogue/?search=recreation&sort=score%20desc" target="_blank">open data</a> from the City of Toronto's drop-in recreation programs and facilities. 
+                  This tool uses <a className="text-[#13a4ec]" href="https://open.toronto.ca/catalogue/?search=recreation&sort=score%20desc" target="_blank">open data</a> from the City of Toronto's drop-in recreation programs and facilities. 
                   It does not include data about the City's registered recreation programming such as lessons and classes.
                   Data are retrieved nightly to ensure accuracy, but last-minute program changes and availability may not be accuractely reflected here. 
                   For the most current information, please contact the specific recreation centre.
