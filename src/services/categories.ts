@@ -5,6 +5,7 @@ export interface Category {
   name: string;
   subcategories: Subcategory[];
   fallbackIcon: string; // Fallback icon for programs in this category
+  ageRequirement?: { min?: number; max?: number }; // Age requirements for this category
 }
 
 export interface Subcategory {
@@ -84,9 +85,10 @@ export const categories: Category[] = [
     id: 'family',
     name: 'Family Programs',
     fallbackIcon: 'family_restroom',
+    ageRequirement: { max: 6 },
     subcategories: [
       { id: 'family-swim', name: 'Family Swim', keywords: ['family swim'] },
-      { id: 'family-sports', name: 'Family Sports', keywords: ['basketball with family', 'badminton with family', 'pickleball with family', 'soccer with family', 'volleyball with family', 'tennis with family', 'table-tennis with family', 'skate with family', 'multi-sport with family'] },
+      { id: 'family-sports', name: 'Family Sports', keywords: ['with family'] },
       { id: 'family-arts', name: 'Family Arts', keywords: ['family arts'] },
       { id: 'early-years', name: 'Early Years', keywords: ['early years', 'preschool', 'caregiver', 'soccer'], exclusions: ['leisure Skate: child with caregiver'] , ageRequirement: { max: 6 }},
       { id: 'other-family-programs', name: 'Other Family Programs', keywords: ['family'], ageRequirement: { max: 6 }, isFallback: true }
@@ -104,7 +106,7 @@ export const categories: Category[] = [
       { id: 'strength', name: 'Strength Training', keywords: ['strength', 'weight', 'gym'] },
       { id: 'hiit', name: 'HIIT', keywords: ['hiit', 'boot camp'] },
       { id: 'gentle-fitness', name: 'Gentle Fitness', keywords: ['gentle', 'mobility', ': chair', 'osteofit', 'tai chi', 'qigong'] },
-      { id: 'walking', name: 'Walking', keywords: ['walk', 'running track'], exclusions: ['aqua fitness'] },
+      { id: 'walking', name: 'Walking', keywords: ['walk', 'running track'], exclusions: ['aquatic fitness'] },
       { id: 'other-fitness', name: 'Other Fitness & Wellness', keywords: ['fitness', 'wellness', 'cycle', 'fit', 'pedal', 'meditation'], isFallback: true }
     ]
   },
@@ -126,7 +128,8 @@ export const categories: Category[] = [
   {
     id: 'older-adult',
     name: 'Older Adult Programs',
-    fallbackIcon: 'group',
+    fallbackIcon: 'group',    
+    ageRequirement: { min: 60 },
     subcategories: [
       { id: 'older-adult-arts-crafts', name: 'Older Adult Arts & Crafts', keywords: ['painting', 'drawing', 'photography', 'visual art', 'design', 'colouring', 'craft', 'sewing', 'knitting', 'crochet', 'quilting', 'decoupage', 'paper tole', 'bunka', 'stained glass', 'carving', 'writing', 'music', 'band', 'choir', 'drumming', 'karaoke', 'drum', 'open mic', 'dance', 'tango', 'ballroom'], exclusions: ['dart'], ageRequirement: { min: 60 } },
       { id: 'older-adult-games', name: 'Older Adult Games & Recreation', keywords: ['club', 'bingo', 'bocce', 'game', 'cards', 'bowling', 'dance', 'bridge', 'euchre', 'cribbage', 'billiards', 'pool', 'snooker', 'darts', 'archery', 'bowling', 'karaoke', 'dance', 'tango', 'ballroom', 'hip hop', 'line dance', 'vogue'], ageRequirement: { min: 60 } },
@@ -191,8 +194,10 @@ export const categories: Category[] = [
     id: 'youth',
     name: 'Youth Programs',
     fallbackIcon: 'group',
+    ageRequirement: { min: 13, max: 24 },
     subcategories: [
       { id: 'youth-clubs', name: 'Youth Clubs', keywords: ['club', 'zone', 'homework'], ageRequirement: { min: 13, max: 24 } },
+      { id: 'youth-enhanced', name: 'Enhanced Youth Spaces Programming', keywords: ['amped', 'chop', 'building skills', 'stomp', 'social environmental'], ageRequirement: { min: 13, max: 24 } },
       { id: 'youth-arts', name: 'Youth Arts', keywords: ['art', 'music', 'dance', 'craft'], ageRequirement: { min: 13, max: 24 } },
       { id: 'youth-fitness', name: 'Youth Fitness & Wellness', keywords: ['gym', 'cardio', 'wellness'], ageRequirement: { min: 13, max: 24 } },
       { id: 'youth-leadership', name: 'Youth Leadership', keywords: ['youth leadership', 'youth council'], ageRequirement: { min: 13, max: 24 } },
@@ -478,7 +483,21 @@ export const courseMatchesCategory = (courseTitle: string, categoryId: string, s
     
     return true;
   } else {
-    // For category-only matching, use the existing logic
+    // For category-only matching, check if the category has age requirements
+    const category = categories.find(cat => cat.id === categoryId);
+    if (!category) return false;
+    
+    // Check category age requirements first
+    if (category.ageRequirement) {
+      const courseAgeMin = ageMin ? parseInt(ageMin) : 0;
+      const courseAgeMax = ageMax === "None" ? 999 : (ageMax ? parseInt(ageMax) : 999);
+      const { min: requiredMin, max: requiredMax } = category.ageRequirement;
+      
+      if (requiredMin && courseAgeMin < requiredMin) return false;
+      if (requiredMax && courseAgeMax > requiredMax) return false;
+    }
+    
+    // Use the existing logic for keyword matching
     const categorizations = categorizeCourse(courseTitle, ageMin, ageMax);
     return categorizations.some(cat => cat.category === categoryId);
   }
