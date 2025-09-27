@@ -27,6 +27,7 @@ export const programIconMappings: Array<{ keywords: string[]; icon: string }> = 
   { keywords: ['badminton'], icon: 'badminton' },
   { keywords: ['pickleball'], icon: 'pickleball' },
   { keywords: ['table tennis'], icon: 'padel' },
+  { keywords: ['squash'], icon: 'sports_tennis' },
   { keywords: ['hockey', 'shinny'], icon: 'sports_hockey' },
   { keywords: ['cricket'], icon: 'sports_cricket' },
   { keywords: ['multi-sport'], icon: 'directions_run' },
@@ -43,12 +44,12 @@ export const programIconMappings: Array<{ keywords: string[]; icon: string }> = 
   { keywords: ['open space'], icon: 'crop_square' },
   
   // Arts & Crafts
-  { keywords: ['dance', 'zumba'], icon: 'taunt' },
+  { keywords: ['dance', 'zumba', 'ballroom', 'vogue'], icon: 'taunt' },
   { keywords: ['music'], icon: 'music_note' },
   { keywords: ['photography'], icon: 'photo_camera' },
   
   // Games & Recreation
-  { keywords: ['archery'], icon: 'target' },  
+  { keywords: ['archery'], icon: 'target' },
   { keywords: ['club'], icon: 'groups' },
   { keywords: ['bocce'], icon: 'scatter_plot' },
   { keywords: ['bowling'], icon: 'circle' },
@@ -175,7 +176,7 @@ export const categories: Category[] = [
       { id: 'table-tennis', name: 'Table Tennis', keywords: ['table tennis'] },
       { id: 'hockey', name: 'Hockey', keywords: ['hockey', 'shinny'] },
       { id: 'multi-sport', name: 'Multi-Sport', keywords: ['multi-sport', 'multi sport'] },
-      { id: 'other-sports', name: 'Other Sports & Athletics', keywords: ['sport', 'baseball', 'dodgeball', 'tennis', 'skateboarding', 'cricket', 'golf'], isFallback: true }
+      { id: 'other-sports', name: 'Other Sports & Athletics', keywords: ['sport', 'baseball', 'dodgeball', 'tennis', 'squash', 'skateboarding', 'cricket', 'golf'], isFallback: true }
     ]
   },
   {

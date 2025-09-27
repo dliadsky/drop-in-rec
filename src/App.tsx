@@ -74,7 +74,7 @@ interface SearchFilters {
   subcategory: string;
   date: string;
   time: string;
-  location: string;
+  location: string[];
   age: string;
 }
 
@@ -137,7 +137,7 @@ function App() {
     subcategory: '',
     date: getDefaultDate(),
     time: getDefaultTime(),
-    location: '',
+    location: [],
     age: ''
   });
   
@@ -152,10 +152,29 @@ function App() {
   const [locationCoordsMap, setLocationCoordsMap] = useState<Map<string, { lat: number; lng: number }>>(new Map());
   const [selectedLocation, setSelectedLocation] = useState<string | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<'alphabetical' | 'earliest' | 'latest'>('alphabetical');
-  const [mapKey, setMapKey] = useState(0);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastResultCount, setLastResultCount] = useState(0);
+  const [showAboutModal, setShowAboutModal] = useState(false);
+
+  // Close modal when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showAboutModal) {
+        const target = event.target as Element;
+        if (target.hasAttribute('data-modal-backdrop')) {
+          setShowAboutModal(false);
+        }
+      }
+    };
+
+    if (showAboutModal) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showAboutModal]);
 
   // Load initial data
   useEffect(() => {
@@ -170,8 +189,24 @@ function App() {
           loadGeoJSONData()
         ]);
         
-        // Extract unique course titles and locations
-        const uniqueCourseTitles = [...new Set(dropIns.map(d => d["Course Title"]).filter(Boolean))].sort();
+        // Filter drop-ins to only include programs available in the upcoming week
+        const today = new Date();
+        const nextWeek = new Date(today);
+        nextWeek.setDate(today.getDate() + 7);
+        
+        const todayStr = today.toISOString().split('T')[0];
+        const nextWeekStr = nextWeek.toISOString().split('T')[0];
+        
+        const filteredDropIns = dropIns.filter(dropIn => {
+          const firstDate = dropIn["First Date"];
+          const lastDate = dropIn["Last Date"];
+          
+          // Check if the program runs during the next week
+          return (firstDate <= nextWeekStr && lastDate >= todayStr);
+        });
+        
+        // Extract unique course titles and locations from filtered data
+        const uniqueCourseTitles = [...new Set(filteredDropIns.map(d => d["Course Title"]).filter(Boolean))].sort();
         
         
         // Create URL, address, and coordinates maps from GeoJSON data
@@ -190,7 +225,7 @@ function App() {
         
         
         setAllCourseTitles(uniqueCourseTitles);
-        setAllDropIns(dropIns);
+        setAllDropIns(filteredDropIns);
         setAllLocations(locations);
         setLocationURLMap(urlMap);
         setLocationAddressMap(addressMap);
@@ -220,7 +255,6 @@ function App() {
     setHasSearched(false);
     setSelectedLocation(undefined);
     setSortOrder('alphabetical');
-    setMapKey(prev => prev + 1); // Force map remount
   };
 
   const handleLocationSelect = (location: string) => {
@@ -232,7 +266,7 @@ function App() {
     performSearch();
   };
 
-  // Extract unique locations with coordinates for the map
+  // Extract unique locations with coordinates for the map and location list
   const mapLocations = React.useMemo(() => {
     const uniqueLocations = new Map<string, { name: string; lat: number; lng: number; address?: string; url?: string }>();
     
@@ -242,9 +276,10 @@ function App() {
       locationNameToIdMap.set(loc["Location Name"], loc["Location ID"].toString());
     });
     
-    results.forEach(result => {
-      if (!uniqueLocations.has(result.location)) {
-        const locationId = locationNameToIdMap.get(result.location);
+    // Helper function to add a location to the map
+    const addLocationToMap = (locationName: string) => {
+      if (!uniqueLocations.has(locationName)) {
+        const locationId = locationNameToIdMap.get(locationName);
         
         if (locationId) {
           const coords = locationCoordsMap.get(locationId);
@@ -274,32 +309,106 @@ function App() {
               formattedAddress = streetAddress ? `${streetAddress}\n${cityLine}` : cityLine;
             }
             
-            uniqueLocations.set(result.location, {
-              name: result.location,
+            // Get URL from locationURLMap using location ID
+            const locationIdForURL = locationData ? locationData["Location ID"].toString() : locationId;
+            const locationURL = locationURLMap.get(locationIdForURL) || undefined;
+            
+            uniqueLocations.set(locationName, {
+              name: locationName,
               lat: coords.lat,
               lng: coords.lng,
               address: formattedAddress || undefined,
-              url: result.locationURL || undefined
+              url: locationURL
             });
           }
         }
       }
-    });
+    };
     
-    return Array.from(uniqueLocations.values());
-  }, [results, locationCoordsMap, allLocations]);
-
-  // Force map remount when transitioning from no results to having results
-  useEffect(() => {
-    const wasEmpty = lastResultCount === 0;
-    const nowHasResults = results.length > 0;
+    // Check if we have any active filters
+    const hasActiveFilters = filters.courseTitle || filters.category || filters.subcategory || 
+                            filters.location.length > 0 || filters.age || 
+                            (filters.date && filters.date !== getDefaultDate()) || 
+                            (filters.time && filters.time !== getDefaultTime());
     
-    if (wasEmpty && nowHasResults) {
-      setMapKey(prev => prev + 1);
+    if (hasActiveFilters) {
+      // Add locations from results
+      results.forEach(result => {
+        addLocationToMap(result.location);
+      });
+      
+      // Add selected locations (even if they don't have results)
+      filters.location.forEach(selectedLocationName => {
+        addLocationToMap(selectedLocationName);
+      });
+    } else {
+      // No active filters - show all locations that have programs in the upcoming week
+      const locationsWithPrograms = new Set<number>();
+      allDropIns.forEach(dropIn => {
+        locationsWithPrograms.add(dropIn["Location ID"]);
+      });
+      
+      // Add locations that have programs in the upcoming week
+      allLocations.forEach(location => {
+        if (locationsWithPrograms.has(location["Location ID"])) {
+          const locationName = location["Location Name"];
+          const locationId = location["Location ID"].toString();
+          const coords = locationCoordsMap.get(locationId);
+          
+          if (coords) {
+            // Format address from Locations.json data
+            let formattedAddress = '';
+            const streetNo = location["Street No"] && location["Street No"] !== "None" ? location["Street No"] : '';
+            const streetNoSuffix = location["Street No Suffix"] && location["Street No Suffix"] !== "None" ? location["Street No Suffix"] : '';
+            const streetName = location["Street Name"] && location["Street Name"] !== "None" ? location["Street Name"] : '';
+            const streetType = location["Street Type"] && location["Street Type"] !== "None" ? location["Street Type"] : '';
+            const streetDirection = location["Street Direction"] && location["Street Direction"] !== "None" ? location["Street Direction"] : '';
+            const postalCode = location["Postal Code"] && location["Postal Code"] !== "None" ? location["Postal Code"] : '';
+            
+            // Format: {Street Number}{Street No Suffix} {Street Name} {Street Type} {Street Direction}
+            const streetAddress = [streetNo, streetNoSuffix, streetName, streetType, streetDirection]
+              .filter(part => part && part !== "None")
+              .join(' ');
+            
+            // Format: Toronto, ON  {Postal Code}
+            const cityLine = postalCode ? `Toronto, ON  ${postalCode}` : 'Toronto, ON';
+            
+            formattedAddress = streetAddress ? `${streetAddress}\n${cityLine}` : cityLine;
+            
+            // Get URL from locationURLMap using location ID
+            const locationId = location["Location ID"].toString();
+            const locationURL = locationURLMap.get(locationId) || undefined;
+            
+            uniqueLocations.set(locationName, {
+              name: locationName,
+              lat: coords.lat,
+              lng: coords.lng,
+              address: formattedAddress || undefined,
+              url: locationURL
+            });
+          }
+        }
+      });
     }
     
-    setLastResultCount(results.length);
-  }, [results.length, lastResultCount]);
+    return Array.from(uniqueLocations.values());
+  }, [results, locationCoordsMap, allLocations, allDropIns, locationURLMap, filters.location, filters.courseTitle, filters.category, filters.subcategory, filters.age, filters.date, filters.time]);
+
+  // Create a list of location names that should be available in the dropdown
+  // Since allDropIns is already filtered to upcoming week, this will only show relevant locations
+  const availableLocationNames = React.useMemo(() => {
+    // Get all locations that have programs in the upcoming week
+    const locationsWithPrograms = new Set<number>();
+    allDropIns.forEach(dropIn => {
+      locationsWithPrograms.add(dropIn["Location ID"]);
+    });
+    
+    // Return location names that have programs
+    return allLocations
+      .filter(location => locationsWithPrograms.has(location["Location ID"]))
+      .map(location => location["Location Name"]);
+  }, [allDropIns, allLocations]);
+
 
   const performSearch = async (searchFilters?: SearchFilters) => {
     const currentFilters = searchFilters || filters;
@@ -336,11 +445,11 @@ function App() {
         );
         
         if (parentCategory) {
-          filteredResults = filteredResults.filter(dropIn => {
+        filteredResults = filteredResults.filter(dropIn => {
             const courseTitle = dropIn["Course Title"];
             if (!courseTitle) return false;
             return courseMatchesCategory(courseTitle, parentCategory.id, currentFilters.subcategory, dropIn["Age Min"], dropIn["Age Max"]);
-          });
+        });
         }
       }
 
@@ -352,14 +461,16 @@ function App() {
       }
 
       // Filter by location
-      if (currentFilters.location) {
-        // Find the location ID for the selected location name
+      if (currentFilters.location.length > 0) {
+        // Find the location IDs for the selected location names
         const locationMap = new Map(allLocations.map(loc => [loc["Location Name"], loc["Location ID"]]));
-        const selectedLocationId = locationMap.get(currentFilters.location);
+        const selectedLocationIds = currentFilters.location
+          .map(locationName => locationMap.get(locationName))
+          .filter(id => id !== undefined);
         
-        if (selectedLocationId) {
+        if (selectedLocationIds.length > 0) {
           filteredResults = filteredResults.filter(dropIn => 
-            dropIn["Location ID"] === selectedLocationId
+            selectedLocationIds.includes(dropIn["Location ID"])
           );
         }
       }
@@ -509,17 +620,24 @@ function App() {
       <div className="flex flex-1 flex-col min-h-0">
         {/* Header */}
         <header className="flex items-center justify-between whitespace-nowrap border-b border-slate-200/80 bg-white px-4 sm:px-6 py-3">
-          <div className="flex items-center gap-3">
+          <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity hover:text-black">
             <div className="h-8 w-24 text-[#13a4ec]">
-              <svg width="98" height="32" preserveAspectRatio="xMidYMid" version="1.0" viewBox="0 0 441 144" xmlns="http://www.w3.org/2000/svg" zoomAndPan="magnify"><defs><clipPath id="ee99ce914c"><path d="m31.5 0h144v144h-144z"/></clipPath><clipPath id="12e0999432"><path d="m103.5 0c-39.766 0-72 32.234-72 72 0 39.766 32.234 72 72 72 39.766 0 72-32.234 72-72 0-39.766-32.234-72-72-72z"/></clipPath><clipPath id="ff1767cd20"><path d="m0.5 0h144v144h-144z"/></clipPath><clipPath id="68775b27e6"><path d="m72.5 0c-39.766 0-72 32.234-72 72 0 39.766 32.234 72 72 72 39.766 0 72-32.234 72-72 0-39.766-32.234-72-72-72z"/></clipPath><clipPath id="967b1ca997"><rect width="145" height="144"/></clipPath><clipPath id="6344cb8a01"><path d="m180 0h144v144h-144z"/></clipPath><clipPath id="2db6a0abd6"><path d="m252 0c-39.766 0-72 32.234-72 72 0 39.766 32.234 72 72 72 39.766 0 72-32.234 72-72 0-39.766-32.234-72-72-72z"/></clipPath><clipPath id="ee8444bc07"><path d="m0 0h144v144h-144z"/></clipPath><clipPath id="3c0a2ecd82"><path d="m72 0c-39.766 0-72 32.234-72 72 0 39.766 32.234 72 72 72 39.766 0 72-32.234 72-72 0-39.766-32.234-72-72-72z"/></clipPath><clipPath id="886ba6cf62"><rect width="144" height="144"/></clipPath><clipPath id="2cfd04c7da"><path d="m328.5 0h144v144h-144z"/></clipPath><clipPath id="9b60b8b4a2"><path d="m400.5 0c-39.766 0-72 32.234-72 72 0 39.766 32.234 72 72 72 39.766 0 72-32.234 72-72 0-39.766-32.234-72-72-72z"/></clipPath><clipPath id="5d130f6bbb"><path d="m0.5 0h144v144h-144z"/></clipPath><clipPath id="2b5599abba"><path d="m72.5 0c-39.766 0-72 32.234-72 72 0 39.766 32.234 72 72 72 39.766 0 72-32.234 72-72 0-39.766-32.234-72-72-72z"/></clipPath><clipPath id="a27b9fb08d"><rect width="145" height="144"/></clipPath></defs><g transform="translate(-31.5)" clipPath="url(#ee99ce914c)"><g clipPath="url(#12e0999432)"><g transform="translate(31)"><g clipPath="url(#967b1ca997)"><g clipPath="url(#ff1767cd20)"><g clipPath="url(#68775b27e6)"><path d="m0.5 0h144v144h-144z" fill="#13a4ec"/></g></g></g></g><path transform="matrix(.75 0 0 .75 31.5 2e-6)" d="m96-2.6667e-6c-53.021 0-96 42.979-96 96 0 53.021 42.979 96 96 96 53.021 0 96-42.979 96-96 0-53.021-42.979-96-96-96z" fill="none" stroke="#13a4ec" strokeWidth="18"/></g></g><path d="m79.277 123.48-7.2812-7.2812 18.465-18.465-44.207-44.203-18.465 18.461-7.2773-7.2812 7.2773-7.5391-7.2773-7.2812 10.918-10.922-7.2773-7.543 7.2773-7.2773 7.543 7.2773 10.922-10.918 7.2812 7.2812 7.5391-7.2812 7.2812 7.2812-18.461 18.461 44.203 44.207 18.465-18.465 7.2812 7.2812-7.2812 7.543 7.2812 7.2812-10.922 10.918 7.2812 7.543-7.2812 7.2812-7.543-7.2812-10.918 10.922-7.2812-7.2812z" fill="#fff"/><g transform="translate(-31.5)" clipPath="url(#6344cb8a01)"><g clipPath="url(#2db6a0abd6)"><g transform="translate(180)"><g clipPath="url(#886ba6cf62)"><g clipPath="url(#ee8444bc07)"><g clipPath="url(#3c0a2ecd82)"><rect x="-290.88" y="-31.68" width="725.76" height="207.36" fill="#13a4ec"/></g></g></g></g><path transform="matrix(.75 0 0 .75 180 2e-6)" d="m96-2.6667e-6c-53.021 0-96 42.979-96 96 0 53.021 42.979 96 96 96s96-42.979 96-96c0-53.021-42.979-96-96-96z" fill="none" stroke="#13a4ec" strokeWidth="18"/></g></g><path d="m168.49 118.8v-10.402c3.2969 0 5.7656-0.86718 7.4141-2.6016 1.6445-1.7344 4.8945-2.6016 9.75-2.6016s8.1914 0.86719 10.012 2.6016c1.8203 1.7344 4.2891 2.6016 7.4102 2.6016 3.1211 0 5.5898-0.86718 7.4102-2.6016 1.8203-1.7344 5.1602-2.6016 10.012-2.6016 4.8555 0 8.1914 0.86719 10.012 2.6016 1.8203 1.7344 4.2891 2.6016 7.4102 2.6016 3.1211 0 5.5938-0.86718 7.4102-2.6016 1.8203-1.7344 5.1602-2.6016 10.012-2.6016 4.8555 0 8.1055 0.86719 9.7539 2.6016 1.6445 1.7344 4.1172 2.6016 7.4102 2.6016v10.402c-5.1133 0-8.4727-0.86719-10.078-2.6016-1.6016-1.7344-3.9648-2.6016-7.0859-2.6016-3.1172 0-5.5898 0.86719-7.4102 2.6016-1.8203 1.7344-5.1562 2.6016-10.012 2.6016-4.8516 0-8.1914-0.86719-10.012-2.6016-1.8203-1.7344-4.2891-2.6016-7.4102-2.6016-3.1211 0-5.5898 0.86719-7.4102 2.6016-1.8203 1.7344-5.1562 2.6016-10.012 2.6016s-8.1914-0.86719-10.012-2.6016c-1.8203-1.7344-4.2891-2.6016-7.4102-2.6016-3.1211 0-5.4844 0.86719-7.0859 2.6016-1.6055 1.7344-4.9609 2.6016-10.078 2.6016zm0-23.406v-10.398c3.2969 0 5.7656-0.86719 7.4141-2.6016 1.6445-1.7344 4.8945-2.6016 9.75-2.6016s8.2109 0.86719 10.078 2.6016c1.8633 1.7344 4.3086 2.6016 7.3438 2.6016 3.1211 0 5.5898-0.86719 7.4102-2.6016 1.8203-1.7344 5.1602-2.6016 10.012-2.6016 4.8555 0 8.1914 0.86719 10.012 2.6016 1.8203 1.7344 4.2891 2.6016 7.4102 2.6016 3.1211 0 5.5938-0.86719 7.4102-2.6016 1.8203-1.7344 5.1602-2.6016 10.012-2.6016 4.8555 0 8.1055 0.86719 9.7539 2.6016 1.6445 1.7344 4.1172 2.6016 7.4102 2.6016v10.398c-5.1133 0-8.4727-0.86719-10.078-2.5977-1.6016-1.7344-3.9648-2.6016-7.0859-2.6016-3.1172 0-5.5234 0.86719-7.2148 2.6016-1.6914 1.7305-5.0938 2.5977-10.207 2.5977-4.9414 0-8.2969-0.86719-10.074-2.5977-1.7773-1.7344-4.2266-2.6016-7.3477-2.6016-3.293 0-5.7422 0.86719-7.3438 2.6016-1.6055 1.7305-4.9648 2.5977-10.078 2.5977s-8.5156-0.86719-10.207-2.5977c-1.6875-1.7344-4.0938-2.6016-7.2148-2.6016-3.1211 0-5.4844 0.86719-7.0859 2.6016-1.6055 1.7305-4.9609 2.5977-10.078 2.5977zm25.484-26.523 17.293-17.289-5.1992-5.2031c-2.8633-2.8594-5.8945-4.9414-9.1016-6.2383-3.207-1.3008-7.1523-1.9531-11.832-1.9531v-13c6.5 0 11.875 0.71484 16.121 2.1445 4.2461 1.4297 8.4062 4.1836 12.48 8.2578l33.285 33.281c-1.4727 0.95312-2.9023 1.7148-4.2891 2.2773s-2.9922 0.84375-4.8125 0.84375c-3.1211 0-5.5898-0.86719-7.4102-2.6016-1.8203-1.7305-5.1562-2.5977-10.012-2.5977-4.8516 0-8.1914 0.86719-10.012 2.5977-1.8203 1.7344-4.2891 2.6016-7.4102 2.6016-1.8203 0-3.4219-0.28125-4.8086-0.84375-1.3867-0.5625-2.8203-1.3242-4.293-2.2773zm50.969-43.684c3.6406 0 6.7148 1.2773 9.2305 3.8359 2.5117 2.5547 3.7695 5.6094 3.7695 9.1641 0 3.6406-1.2578 6.7188-3.7695 9.2305-2.5156 2.5156-5.5898 3.7734-9.2305 3.7734-3.6406 0-6.7188-1.2578-9.2344-3.7734-2.5117-2.5117-3.7695-5.5898-3.7695-9.2305 0-3.5547 1.2578-6.6094 3.7695-9.1641 2.5156-2.5586 5.5938-3.8359 9.2344-3.8359z" fill="#fff"/><g transform="translate(-31.5)" clipPath="url(#2cfd04c7da)"><g clipPath="url(#9b60b8b4a2)"><g transform="translate(328)"><g clipPath="url(#a27b9fb08d)"><g clipPath="url(#5d130f6bbb)"><g clipPath="url(#2b5599abba)"><path d="m0.5 0h144v144h-144z" fill="#13a4ec"/></g></g></g></g><path transform="matrix(.75 0 0 .75 328.5 2e-6)" d="m96-2.6667e-6c-53.021 0-96 42.979-96 96 0 53.021 42.979 96 96 96 53.021 0 96-42.979 96-96 0-53.021-42.979-96-96-96z" fill="none" stroke="#13a4ec" strokeWidth="18"/></g></g><path d="m340.42 84.867c1.6445 1.6484 3.4648 2.8633 5.457 3.6406 1.9961 0.78125 4.0742 1.1719 6.2422 1.1719s4.2461-0.39063 6.2422-1.1719c1.9922-0.77734 3.8125-1.9922 5.4609-3.6406l4.6797-4.6797c1.6484-1.6445 2.8594-3.4648 3.6406-5.4609 0.78125-1.9922 1.168-4.0742 1.168-6.2383 0-2.168-0.38672-4.2266-1.168-6.1758-0.78125-1.9531-1.9922-3.75-3.6406-5.3984l-19.762-19.762c-1.043-1.0391-2.2774-1.5586-3.707-1.5586-1.4297 0-2.6641 0.51953-3.707 1.5586l-20.539 20.672c-1.043 1.0391-1.5625 2.2539-1.5625 3.6406 0 1.3867 0.51953 2.6016 1.5625 3.6406zm59.805 39.137-30.555-30.555c-2.5117 2.2539-5.3086 3.9023-8.3828 4.9414-3.0781 1.0391-6.1758 1.5586-9.2969 1.5586-3.4688 0-6.8281-0.64844-10.078-1.9492s-6.1758-3.25-8.7734-5.8516l-19.766-19.633c-1.4727-1.4727-2.5977-3.1836-3.3789-5.1328-0.78125-1.9531-1.1719-3.9219-1.1719-5.918 0-1.9922 0.39062-3.9648 1.1719-5.9141 0.78125-1.9531 1.9062-3.6641 3.3789-5.1367l20.676-20.672c1.4727-1.4727 3.1836-2.6016 5.1328-3.3828 1.9531-0.77734 3.9219-1.168 5.918-1.168 1.9922 0 3.9648 0.39062 5.9141 1.168 1.9492 0.78125 3.6641 1.9102 5.1367 3.3828l19.633 19.762c2.6016 2.6016 4.5508 5.5273 5.8516 8.7773 1.2969 3.25 1.9492 6.6094 1.9492 10.074 0 3.1211-0.54297 6.2188-1.625 9.2969-1.0859 3.0781-2.7539 5.8711-5.0078 8.3867l30.688 30.684zm4.8125-67.609c-5.0273 0-9.3203-1.7773-12.871-5.332-3.5547-3.5508-5.332-7.8438-5.332-12.871s1.7773-9.3164 5.332-12.871c3.5508-3.5547 7.8438-5.332 12.871-5.332 5.0274 0 9.3164 1.7773 12.871 5.332 3.5547 3.5547 5.332 7.8438 5.332 12.871s-1.7774 9.3203-5.332 12.871c-3.5547 3.5547-7.8438 5.332-12.871 5.332zm0-10.402c2.168 0 4.0078-0.75781 5.5234-2.2734 1.5195-1.5156 2.2773-3.3594 2.2773-5.5273 0-2.1641-0.75781-4.0078-2.2773-5.5234-1.5156-1.5195-3.3555-2.2773-5.5234-2.2773s-4.0078 0.75781-5.5273 2.2773c-1.5156 1.5156-2.2734 3.3594-2.2734 5.5234 0 2.168 0.75781 4.0117 2.2734 5.5273 1.5195 1.5156 3.3594 2.2734 5.5273 2.2734z" fill="#fff"/></svg>
+              <img 
+                src="drop-in-rec-logo.svg" 
+                alt="Toronto Drop-in Recreation Finder Logo" 
+                className="h-full w-full object-contain"
+              />
             </div>
             <h2 className="text-lg font-bold">Toronto Drop-in Recreation Finder</h2>
-          </div>
-          <a className="flex items-center justify-center h-10 w-10 rounded-full hover:bg-slate-100 transition-colors" href="#">
+          </a>
+          <button 
+            className="flex items-center justify-center h-10 w-10 rounded-full hover:bg-slate-100 transition-colors"
+            onClick={() => setShowAboutModal(true)}
+          >
             <span className="material-symbols-outlined text-slate-500">
               info
             </span>
-          </a>
+          </button>
         </header>
 
         {/* Main content area - Responsive layout */}
@@ -534,7 +652,7 @@ function App() {
               isLoading={isLoading}
               allDropIns={allDropIns}
               courseTitles={allCourseTitles}
-              locations={allLocations.map(loc => loc["Location Name"])}
+              locations={availableLocationNames}
               allLocations={allLocations}
             />
             <div className="flex-1 min-h-0 lg:block hidden">
@@ -554,24 +672,128 @@ function App() {
           <main className="flex-1 min-h-0 flex flex-col lg:block">
             {/* Map - Above results on mobile, full area on desktop */}
             <div className="relative h-[300px] lg:h-full w-full">
-              <LocationMap key={mapKey} locations={mapLocations} isLoading={isLoading} selectedLocation={selectedLocation} onLocationSelect={handleLocationSelect} />
-            </div>
-            
+              <LocationMap 
+                locations={mapLocations} 
+                isLoading={isLoading} 
+                selectedLocation={selectedLocation} 
+                onLocationSelect={handleLocationSelect}
+                selectedLocations={filters.location}
+                locationHasResults={(locationName) => {
+                  // Check if any results exist for this specific location
+                  return results.some(result => result.location === locationName);
+                }}
+              />
+        </div>
+
             {/* Mobile Results - Below map on mobile, hidden on desktop */}
             <div className="lg:hidden flex-1 min-h-0">
-              <SearchResults
-                results={results}
-                isLoading={isLoading}
-                hasSearched={hasSearched}
-                onLocationSelect={handleLocationSelect}
-                selectedLocation={selectedLocation}
-                sortOrder={sortOrder}
-                onSortOrderChange={setSortOrder}
-              />
-            </div>
+          <SearchResults
+            results={results}
+            isLoading={isLoading}
+            hasSearched={hasSearched}
+            onLocationSelect={handleLocationSelect}
+            selectedLocation={selectedLocation}
+            sortOrder={sortOrder}
+            onSortOrderChange={setSortOrder}
+          />
+        </div>
           </main>
         </div>
       </div>
+      
+      {/* About Modal */}
+      {showAboutModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" data-modal-backdrop>
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-900">About Toronto Drop-in Recreation Finder</h2>
+              <button
+                onClick={() => setShowAboutModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <span className="material-symbols-outlined text-2xl">close</span>
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">What is this tool?</h3>
+                <p className="text-gray-700 leading-relaxed">
+                  The Toronto Drop-in Recreation Finder helps you discover recreational programs and activities 
+                  available across the city. Whether you're looking for sports, arts, fitness, or family activities, 
+                  this tool connects you with programs that match your interests, schedule, and location.
+                </p>
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">How to use it</h3>
+                <ul className="text-gray-700 space-y-2">
+                  <li className="flex items-start">
+                    <span className="material-symbols-outlined text-[#13a4ec] mr-2 mt-0.5 text-sm">search</span>
+                    <span><strong>Search by category:</strong> Browse programs by type (Sports, Arts, Fitness, etc.)</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="material-symbols-outlined text-[#13a4ec] mr-2 mt-0.5 text-sm">schedule</span>
+                    <span><strong>Filter by time:</strong> Find programs that fit your schedule</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="material-symbols-outlined text-[#13a4ec] mr-2 mt-0.5 text-sm">location_on</span>
+                    <span><strong>Find nearby locations:</strong> Discover programs in your area</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="material-symbols-outlined text-[#13a4ec] mr-2 mt-0.5 text-sm">share</span>
+                    <span><strong>Share your search:</strong> Save and share your favorite filter combinations</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Data source</h3>
+                <p className="text-gray-700 leading-relaxed">
+                  This tool uses <a class="text-[#13a4ec]" href="https://open.toronto.ca/catalogue/?search=recreation&sort=score%20desc" target="_blank">open data</a> from the City of Toronto's drop-in recreation programs and facilities. 
+                  It does not include data about the City's registered recreation programming such as lessons and classes.
+                  Data are retrieved nightly to ensure accuracy, but last-minute program changes and availability may not be accuractely reflected here. 
+                  For the most current information, please contact the specific recreation centre.
+                </p>
+              </div>
+              
+              <div className="pt-4 border-t border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <p className="text-sm text-gray-500">
+                      Built with 🖤 by <a className="text-[#13a4ec] hover:text-[#13a4ec]/80" href="https://purposeanalytics.ca" target="_blank">Purpose Analytics</a> for the Toronto community. 
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <a 
+                        href="https://www.linkedin.com/company/purpose-analytics" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-gray-500 hover:text-[#0077b5] transition-colors"
+                        title="Purpose Analytics LinkedIn"
+                      >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg>
+                    </a>
+                    <a 
+                      href="https://github.com/dliadsky/drop-in-rec" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors"
+                      title="View on GitHub"
+                    >
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+        </div>
+      </div>
+        </div>
+      )}
       </div>
   );
 }

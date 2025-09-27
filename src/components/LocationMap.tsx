@@ -13,9 +13,11 @@ interface LocationMapProps {
   isLoading: boolean;
   selectedLocation?: string;
   onLocationSelect?: (location: string) => void;
+  selectedLocations?: string[];
+  locationHasResults?: (locationName: string) => boolean;
 }
 
-const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selectedLocation, onLocationSelect }) => {
+const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selectedLocation, onLocationSelect, selectedLocations = [], locationHasResults }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<any>(null);
   const markers = useRef<Map<string, any>>(new Map());
@@ -103,17 +105,46 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
         }
 
         const isSelected = selectedLocation === location.name;
+        const isInSelectedLocations = selectedLocations.includes(location.name);
         
         // Create custom marker element
         const markerElement = document.createElement('div');
         markerElement.className = 'custom-marker';
         
         if (isSelected) {
-          // Selected marker - use a pin icon
+          // Currently selected marker - check if it has results to determine color
+          const hasResultsForLocation = locationHasResults ? locationHasResults(location.name) : false;
+          const isInSelectedLocations = selectedLocations.includes(location.name);
+          
+          let color, size;
+          if (isInSelectedLocations && !hasResultsForLocation) {
+            // Selected location with no results - darker gray and larger
+            color = 'rgb(128, 128, 128)';
+            size = '32px';
+          } else {
+            // Selected location with results or not in selected locations - blue
+            color = 'rgb(20, 161, 255)';
+            size = '30px';
+          }
+          
           markerElement.style.cssText = `
-            width: 30px;
-            height: 30px;
-            background-color:rgb(20, 161, 255);
+            width: ${size};
+            height: ${size};
+            background-color: ${color};
+            border: 2px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: all 0.2s ease;
+          `;
+        } else if (isInSelectedLocations) {
+          // Selected location - light blue if has results for this specific location, gray if no results
+          const hasResultsForLocation = locationHasResults ? locationHasResults(location.name) : false;
+          const color = hasResultsForLocation ? 'rgb(149, 214, 247)' : 'rgb(180, 180, 180)';
+          markerElement.style.cssText = `
+            width: 28px;
+            height: 28px;
+            background-color: ${color};
             border: 2px solid white;
             border-radius: 50%;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
@@ -121,7 +152,7 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
             transition: all 0.2s ease;
           `;
         } else {
-          // Default marker - use a circle
+          // Default marker - light blue
           markerElement.style.cssText = `
             width: 24px;
             height: 24px;

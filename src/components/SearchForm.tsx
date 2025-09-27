@@ -69,7 +69,7 @@ interface SearchFilters {
   subcategory: string;
   date: string;
   time: string;
-  location: string;
+  location: string[];
   age: string;
 }
 
@@ -102,6 +102,36 @@ const SearchForm: React.FC<SearchFormProps> = ({
     location: '',
     program: ''
   });
+  
+  // State for selected locations
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  
+  // State for share popover
+  const [showSharePopover, setShowSharePopover] = useState(false);
+  const [copyButtonText, setCopyButtonText] = useState('Copy to clipboard');
+  
+  // Close popover when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showSharePopover) {
+        const target = event.target as Element;
+        if (!target.closest('.share-popover-container')) {
+          setShowSharePopover(false);
+        }
+      }
+    };
+
+    if (showSharePopover) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showSharePopover]);
+  
+  // State to track if URL has been loaded
+  const [urlLoaded, setUrlLoaded] = useState(false);
 
   // State for autocomplete dropdowns
   const [showProgramDropdown, setShowProgramDropdown] = useState(false);
@@ -116,8 +146,9 @@ const SearchForm: React.FC<SearchFormProps> = ({
   React.useEffect(() => {
     setSearchInputs({
       program: filters.courseTitle,
-      location: filters.location
+      location: '' // Keep location input empty for typing
     });
+    setSelectedLocations(filters.location);
   }, [filters.courseTitle, filters.location]);
 
   const handleInputChange = React.useCallback((field: keyof SearchFilters, value: string) => {
@@ -150,11 +181,9 @@ const SearchForm: React.FC<SearchFormProps> = ({
       onFiltersChange(newFilters);
       // Don't auto-search while typing, wait for selection or Enter
     } else if (field === 'location') {
+      setSearchInputs(prev => ({ ...prev, [field]: value }));
       setShowLocationDropdown(true); // Always show dropdown when typing
-      const newFilters = { ...filters, location: value };
-      onFiltersChange(newFilters);
-      // Trigger search immediately for location changes to refresh map
-      onSearch(newFilters);
+      // Don't update filters while typing - only when location is selected
     }
   }, [filters, onFiltersChange, onSearch]);
 
@@ -193,9 +222,10 @@ const SearchForm: React.FC<SearchFormProps> = ({
     const newFilters = { ...filters };
     if (field === 'program') {
       newFilters.courseTitle = '';
-    } else if (field === 'location') {
-      newFilters.location = '';
-    }
+      } else if (field === 'location') {
+        newFilters.location = [];
+        setSelectedLocations([]);
+      }
     
     onFiltersChange(newFilters);
     onSearch(newFilters);
@@ -208,21 +238,112 @@ const SearchForm: React.FC<SearchFormProps> = ({
   }, [filters, onFiltersChange, onSearch]);
 
   const handleOptionSelect = React.useCallback((field: keyof typeof searchInputs, value: string) => {
-    setSearchInputs(prev => ({ ...prev, [field]: value }));
-    
-    // Update filters and trigger search
     if (field === 'program') {
+      setSearchInputs(prev => ({ ...prev, [field]: value }));
       const newFilters = { ...filters, courseTitle: value };
       onFiltersChange(newFilters);
       setShowProgramDropdown(false);
       onSearch(newFilters);
     } else if (field === 'location') {
-      const newFilters = { ...filters, location: value };
-      onFiltersChange(newFilters);
+      // Add location to selected locations if not already selected
+      if (!selectedLocations.includes(value)) {
+        const newSelectedLocations = [...selectedLocations, value];
+        setSelectedLocations(newSelectedLocations);
+        const newFilters = { ...filters, location: newSelectedLocations };
+        onFiltersChange(newFilters);
+        onSearch(newFilters);
+      }
+      setSearchInputs(prev => ({ ...prev, location: '' })); // Clear input
       setShowLocationDropdown(false);
-      onSearch(newFilters);
     }
-  }, [filters, onFiltersChange, onSearch]);
+  }, [filters, onFiltersChange, onSearch, selectedLocations]);
+
+  const handleRemoveLocation = React.useCallback((locationToRemove: string) => {
+    const newSelectedLocations = selectedLocations.filter(loc => loc !== locationToRemove);
+    setSelectedLocations(newSelectedLocations);
+    const newFilters = { ...filters, location: newSelectedLocations };
+    onFiltersChange(newFilters);
+    onSearch(newFilters);
+  }, [selectedLocations, filters, onFiltersChange, onSearch]);
+
+  // Copy to clipboard function
+  const handleCopyToClipboard = async () => {
+    const shareUrl = generateShareUrl();
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopyButtonText('Copied!');
+      setTimeout(() => {
+        setCopyButtonText('Copy to clipboard');
+      }, 3000);
+    } catch (err) {
+      console.error('Failed to copy to clipboard:', err);
+    }
+  };
+
+  // Bookmark/Share functionality
+  const generateShareUrl = React.useCallback(() => {
+    const params = new URLSearchParams();
+    if (filters.category) params.set('category', filters.category);
+    if (filters.subcategory) params.set('subcategory', filters.subcategory);
+    if (filters.courseTitle) params.set('program', filters.courseTitle);
+    if (filters.location.length > 0) params.set('locations', filters.location.join(','));
+    // if (filters.date) params.set('date', filters.date);
+    // if (filters.time) params.set('time', filters.time);
+    if (filters.age) params.set('age', filters.age);
+    
+    const baseUrl = window.location.origin + window.location.pathname;
+    return params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
+  }, [filters]);
+
+  const loadFromUrl = React.useCallback(() => {
+    if (urlLoaded) return; // Prevent multiple loads
+    
+    const params = new URLSearchParams(window.location.search);
+    const urlFilters: SearchFilters = {
+      category: params.get('category') || '',
+      subcategory: params.get('subcategory') || '',
+      courseTitle: params.get('program') || '',
+      location: params.get('locations') ? params.get('locations')!.split(',') : [],
+      date: params.get('date') || getDefaultDate(),
+      time: params.get('time') || getDefaultTime(),
+      age: params.get('age') || ''
+    };
+    
+    // Only update if there are URL parameters
+    if (params.toString()) {
+      onFiltersChange(urlFilters);
+      onSearch(urlFilters);
+      
+      // Update selected locations
+      setSelectedLocations(urlFilters.location);
+      
+      // Update search inputs
+      setSearchInputs({
+        location: '',
+        program: urlFilters.courseTitle
+      });
+    }
+    
+    setUrlLoaded(true);
+  }, [onFiltersChange, onSearch, urlLoaded]);
+
+  // Load filters from URL on component mount
+  React.useEffect(() => {
+    loadFromUrl();
+  }, [loadFromUrl]);
+
+  // Update URL when filters change (but not on initial load)
+  React.useEffect(() => {
+    if (!urlLoaded) return; // Don't update URL until after initial load
+    
+    const shareUrl = generateShareUrl();
+    
+    // Only update URL if it's different from current URL
+    if (shareUrl !== window.location.href) {
+      window.history.replaceState({}, '', shareUrl);
+    }
+  }, [filters, generateShareUrl, urlLoaded]);
+
 
   const handleKeyPress = React.useCallback((e: React.KeyboardEvent, field: keyof typeof searchInputs) => {
     if (e.key === 'Enter') {
@@ -231,11 +352,10 @@ const SearchForm: React.FC<SearchFormProps> = ({
         setShowProgramDropdown(false);
         const newFilters = { ...filters, courseTitle: searchInputs.program };
         onSearch(newFilters);
-      } else if (field === 'location') {
-        setShowLocationDropdown(false);
-        const newFilters = { ...filters, location: searchInputs.location };
-        onSearch(newFilters);
-      }
+        } else if (field === 'location') {
+          setShowLocationDropdown(false);
+          // Don't update filters on Enter for location - only when location is selected
+        }
     }
   }, [onSearch, filters, searchInputs]);
 
@@ -247,7 +367,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
       subcategory: '',
       date: getDefaultDate(),
       time: getDefaultTime(),
-      location: '',
+      location: [],
       age: ''
     };
     
@@ -256,6 +376,9 @@ const SearchForm: React.FC<SearchFormProps> = ({
       location: '',
       program: ''
     });
+    
+    // Reset selected locations
+    setSelectedLocations([]);
 
     // Hide dropdowns
     setShowProgramDropdown(false);
@@ -635,43 +758,69 @@ const SearchForm: React.FC<SearchFormProps> = ({
         </div>
 
         {/* Location Search Input */}
-        <div className="relative">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base"> location_on </span>
-          <input 
-            className="w-full rounded-lg bg-[#f6f7f8] py-2.5 pl-10 pr-10 text-sm focus:ring-2 focus:ring-[#13a4ec] focus:border-[#13a4ec] border-transparent" 
-            placeholder="Search by location" 
-            type="text"
-            value={searchInputs.location}
-            onChange={(e) => handleSearchInputChange('location', e.target.value)}
-            onKeyPress={(e) => handleKeyPress(e, 'location')}
-            onFocus={() => setShowLocationDropdown(true)}
-            onBlur={() => setTimeout(() => setShowLocationDropdown(false), 150)}
-          />
-          {searchInputs.location && (
-            <button 
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              onClick={() => handleClearField('location')}
-            >
-              <span className="material-symbols-outlined text-xl"> close </span>
-            </button>
-          )}
+        <div>
+          <div className="relative">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base"> location_on </span>
+            <input 
+              className="w-full rounded-lg bg-[#f6f7f8] py-2.5 pl-10 pr-10 text-sm focus:ring-2 focus:ring-[#13a4ec] focus:border-[#13a4ec] border-transparent" 
+              placeholder="Search by location" 
+              type="text"
+              value={searchInputs.location}
+              onChange={(e) => handleSearchInputChange('location', e.target.value)}
+              onKeyPress={(e) => handleKeyPress(e, 'location')}
+              onFocus={() => setShowLocationDropdown(true)}
+              onClick={() => setShowLocationDropdown(true)}
+              onBlur={() => setTimeout(() => setShowLocationDropdown(false), 200)}
+            />
+            {searchInputs.location && (
+              <button 
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                onClick={() => handleClearField('location')}
+              >
+                <span className="material-symbols-outlined text-xl"> close </span>
+              </button>
+            )}
+            
+            {/* Location Autocomplete Dropdown */}
+            {showLocationDropdown && (filteredLocationOptions.length > 0 || allFilteredLocations.length > 0) && (
+              <div 
+                className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto"
+                onScroll={handleLocationDropdownScroll}
+              >
+                {filteredLocationOptions.map((option, index) => (
+                  <div
+                    key={index}
+                    className="px-3 py-2 cursor-pointer hover:bg-gray-50 text-sm"
+                    onMouseDown={(e) => {
+                      e.preventDefault() // Prevent input from losing focus
+                      handleOptionSelect('location', option);
+                    }}
+                  >
+                    {option}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           
-          {/* Location Autocomplete Dropdown */}
-          {showLocationDropdown && (filteredLocationOptions.length > 0 || allFilteredLocations.length > 0) && (
-            <div 
-              className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto"
-              onScroll={handleLocationDropdownScroll}
-            >
-              {filteredLocationOptions.map((option, index) => (
+          {/* Selected Locations */}
+          {selectedLocations.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {selectedLocations
+                .slice()
+                .sort((a, b) => a.localeCompare(b))
+                .map((location, index) => (
                 <div
                   key={index}
-                  className="px-3 py-2 cursor-pointer hover:bg-gray-50 text-sm"
-                  onMouseDown={(e) => {
-                    e.preventDefault() // Prevent input from losing focus
-                    handleOptionSelect('location', option);
-                  }}
+                  className="flex items-center gap-1 bg-[#13a4ec]/10 text-[#13a4ec] px-1.5 py-0.5 rounded text-xs"
                 >
-                  {option}
+                  <span className="truncate max-w-40">{location}</span>
+                  <button
+                    onClick={() => handleRemoveLocation(location)}
+                    className="text-[#13a4ec]/60 hover:text-[#13a4ec] flex-shrink-0"
+                  >
+                    <span className="material-symbols-outlined text-xs">close</span>
+                  </button>
                 </div>
               ))}
             </div>
@@ -746,13 +895,59 @@ const SearchForm: React.FC<SearchFormProps> = ({
         </div>
       </div>
 
-      {/* Clear All Button */}
-      <button 
-        className="text-sm font-medium text-[#13a4ec] hover:text-[#13a4ec]/80 transition-colors"
-        onClick={handleClearAll}
-      >
-        Clear All Filters
-      </button>
+      {/* Share and Clear Filters Controls */}
+      <div className="flex justify-between items-center">
+        <div className="relative share-popover-container">
+          <button 
+            className="flex items-center gap-1 text-sm font-medium text-[#13a4ec] hover:text-[#13a4ec]/80 transition-colors"
+            onClick={() => setShowSharePopover(!showSharePopover)}
+          >
+            <span className="material-symbols-outlined text-base">share</span>
+            Share
+          </button>
+          
+          {/* Share Popover */}
+          {showSharePopover && (
+            <div className="absolute top-full left-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-30 min-w-80">
+              {/* Caret/Arrow pointing up to the text */}
+              <div className="absolute -top-1 left-10 transform w-2 h-2 bg-white border-l border-t border-gray-300 rotate-45"></div>
+              
+              {/* Close button */}
+              <button
+                className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+                onClick={() => setShowSharePopover(false)}
+              >
+                <span className="material-symbols-outlined text-sm">close</span>
+              </button>
+              
+              <div className="p-4">
+                <h3 className="text-sm font-medium text-gray-900 mb-2">Share this link:</h3>
+                <div className="mb-1">
+                  <input
+                    type="text"
+                    value={generateShareUrl()}
+                    readOnly
+                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded-md bg-gray-50 text-gray-700"
+                  />
+                </div>
+                <button
+                  className="text-xs text-[#13a4ec] hover:text-[#13a4ec]/80 underline"
+                  onClick={handleCopyToClipboard}
+                >
+                  {copyButtonText}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        <button 
+          className="text-sm font-medium text-[#13a4ec] hover:text-[#13a4ec]/80 transition-colors"
+          onClick={handleClearAll}
+        >
+          Clear All Filters
+        </button>
+      </div>
 
       {/* Hidden Search Button - triggered by form submission or Enter key */}
       <button
@@ -763,6 +958,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
       >
         Search
       </button>
+
     </div>
   );
 };
