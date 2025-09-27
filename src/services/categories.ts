@@ -483,7 +483,7 @@ export const courseMatchesCategory = (courseTitle: string, categoryId: string, s
     
     return true;
   } else {
-    // For category-only matching, check if the category has age requirements
+    // For category-only matching, check if any subcategory in the category matches
     const category = categories.find(cat => cat.id === categoryId);
     if (!category) return false;
     
@@ -497,9 +497,14 @@ export const courseMatchesCategory = (courseTitle: string, categoryId: string, s
       if (requiredMax && courseAgeMax > requiredMax) return false;
     }
     
-    // Use the existing logic for keyword matching
-    const categorizations = categorizeCourse(courseTitle, ageMin, ageMax);
-    return categorizations.some(cat => cat.category === categoryId);
+    // Check if any subcategory in this category matches
+    for (const subcategory of category.subcategories) {
+      if (courseMatchesCategory(courseTitle, categoryId, subcategory.id, ageMin, ageMax)) {
+        return true;
+      }
+    }
+    
+    return false;
   }
 };
 
