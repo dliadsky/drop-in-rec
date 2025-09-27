@@ -257,7 +257,7 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
 
 
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full h-full min-h-[300px] sm:min-h-0 relative">
       {/* Header positioned absolutely over the map */}
       <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-sm">
         <h3 className="text-base font-semibold text-gray-800">

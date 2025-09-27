@@ -547,7 +547,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
           
           {/* Program Autocomplete Dropdown */}
           {showProgramDropdown && filteredProgramOptions.length > 0 && (
-            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+            <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
               {filteredProgramOptions.map((option, index) => (
                 <div
                   key={index}
@@ -588,7 +588,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
           
           {/* Location Autocomplete Dropdown */}
           {showLocationDropdown && filteredLocationOptions.length > 0 && (
-            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+            <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
               {filteredLocationOptions.map((option, index) => (
                 <div
                   key={index}
