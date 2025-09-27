@@ -117,7 +117,6 @@ export const categories: Category[] = [
     id: 'skating',
     name: 'Skating & Ice Sports',
     fallbackIcon: 'ice_skating',
-
     subcategories: [        
       { id: 'hockey', name: 'Hockey', keywords: ['hockey', 'shinny'] },
       { id: 'leisure-skate', name: 'Leisure Skate', keywords: ['leisure skate'] },
@@ -130,7 +129,6 @@ export const categories: Category[] = [
     id: 'specialized',
     name: 'Specialized Programs',
     fallbackIcon: 'support',
-
     subcategories: [
       { id: 'adapted', name: 'Adapted Programs', keywords: ['adapted', 'parasport'] },
       { id: 'senior', name: 'Senior Programs', keywords: ['older adult', 'bingo'] },
@@ -142,7 +140,6 @@ export const categories: Category[] = [
     id: 'sports',
     name: 'Sports & Athletics',
     fallbackIcon: 'sports',
-
     subcategories: [
       { id: 'basketball', name: 'Basketball', keywords: ['basketball'] },
       { id: 'badminton', name: 'Badminton', keywords: ['badminton'] },
@@ -159,7 +156,6 @@ export const categories: Category[] = [
     id: 'swimming',
     name: 'Swimming & Aquatics',
     fallbackIcon: 'pool',
-
     subcategories: [
       { id: 'lane-swim', name: 'Lane Swim', keywords: ['lane swim'] },
       { id: 'leisure-swim', name: 'Leisure Swim', keywords: ['leisure swim'] },
@@ -172,7 +168,6 @@ export const categories: Category[] = [
     id: 'youth',
     name: 'Youth Programs',
     fallbackIcon: 'group',
-
     subcategories: [
       { id: 'youth-clubs', name: 'Youth Clubs', keywords: ['youth club', 'teen club', 'zone', 'homework'] },
       { id: 'youth-arts', name: 'Youth Arts', keywords: ['youth art', 'youth craft', 'youth music', 'youth dance', 'youth creative', 'child art', 'child craft', 'child music', 'child dance', 'kids art', 'kids craft', 'kids music', 'kids dance'] },
