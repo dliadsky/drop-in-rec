@@ -34,6 +34,39 @@ const getCurrentTime = (): string => {
   return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
 };
 
+// Helper function to get default date - if it's late in the day, default to tomorrow
+const getDefaultDate = (): string => {
+  const now = new Date();
+  const hour = now.getHours();
+  
+  // If it's after 10 PM, default to tomorrow
+  if (hour >= 22) {
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const year = tomorrow.getFullYear();
+    const month = (tomorrow.getMonth() + 1).toString().padStart(2, '0');
+    const day = tomorrow.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+  
+  // Otherwise, use today
+  return getCurrentDate();
+};
+
+// Helper function to get default time - if it's late in the day, default to "Any Time"
+const getDefaultTime = (): string => {
+  const now = new Date();
+  const hour = now.getHours();
+  
+  // If it's after 10 PM, default to "Any Time" for tomorrow
+  if (hour >= 22) {
+    return 'Any Time';
+  }
+  
+  // Otherwise, use current time
+  return getCurrentTime();
+};
+
 
 interface SearchFilters {
   courseTitle: string;
@@ -100,8 +133,8 @@ function App() {
     courseTitle: '',
     category: '',
     subcategory: '',
-    date: getCurrentDate(),
-    time: getCurrentTime(),
+    date: getDefaultDate(),
+    time: getDefaultTime(),
     location: '',
     age: ''
   });

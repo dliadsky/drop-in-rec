@@ -2,7 +2,7 @@ name: Nightly JSON Update (Pages)
 
 on:
   schedule:
-    - cron: '0 3 * * *' # 03:00 UTC nightly
+    - cron: '0 7 * * *' # 07:00 UTC nightly
   workflow_dispatch:
 
 # Needed to push commits to main (contents) and to deploy Pages (pages + id-token)
