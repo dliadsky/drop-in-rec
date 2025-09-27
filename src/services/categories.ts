@@ -51,10 +51,10 @@ export const categories: Category[] = [
       { id: 'pilates', name: 'Pilates', keywords: ['pilates'], icon: 'self_improvement' },
       { id: 'cardio', name: 'Cardio', keywords: ['cardio'], icon: 'cardio_load' },
       { id: 'zumba', name: 'Zumba', keywords: ['zumba'], icon: 'taunt' },
-      { id: 'strength', name: 'Strength Training', keywords: ['strength', 'weight'], icon: 'fitness_center' },
+      { id: 'strength', name: 'Strength Training', keywords: ['strength', 'weight', 'gym'], icon: 'fitness_center' },
       { id: 'hiit', name: 'HIIT', keywords: ['hiit', 'boot camp'], icon: 'fitness_center' },
       { id: 'gentle-fitness', name: 'Gentle Fitness', keywords: ['gentle', 'mobility', ': chair', 'osteofit', 'tai chi', 'qigong'], icon: 'person_celebrate' },
-      { id: 'walking', name: 'Walking', keywords: ['walk', 'running track'], icon: 'directions_walk' },
+      { id: 'walking', name: 'Walking', keywords: ['walk', 'running track'], exclusions: ['aqua fitness'], icon: 'directions_walk' },
       { id: 'other-fitness', name: 'Other Fitness & Wellness', keywords: ['fitness', 'wellness', 'cycle', 'fit', 'pedal', 'meditation'], isFallback: true, icon: 'fitness_center' }
     ]
   },
@@ -64,7 +64,7 @@ export const categories: Category[] = [
     icon: 'toys',
     subcategories: [
       { id: 'club', name: 'Clubs', keywords: ['club'], icon: 'groups' },
-      { id: 'board-games', name: 'Board Games', keywords: ['board games', ': board', 'chess'], icon: 'toys_and_games' },
+      { id: 'board-games', name: 'Board Games', keywords: ['board games', 'games: board', 'chess'], icon: 'toys_and_games' },
       { id: 'card-games', name: 'Card Games', keywords: ['cards', 'euchre', 'bridge', 'cribbage'], icon: 'playing_cards' },
       { id: 'billiards', name: 'Billiards & Pool', keywords: ['billiards', 'snooker', 'pool'], icon: 'counter_8' },
       { id: 'darts', name: 'Darts', keywords: ['darts'], icon: 'target' },
@@ -130,7 +130,7 @@ export const categories: Category[] = [
     icon: 'group',
     subcategories: [
       { id: 'youth-clubs', name: 'Youth Clubs', keywords: ['youth club', 'teen club', 'zone', 'homework'], icon: 'groups' },
-     { id: 'youth-arts', name: 'Youth Arts', keywords: ['youth art', 'youth craft', 'youth music', 'youth dance', 'youth creative', 'child art', 'child craft', 'child music', 'child dance', 'kids art', 'kids craft', 'kids music', 'kids dance'], icon: 'palette' },
+      { id: 'youth-arts', name: 'Youth Arts', keywords: ['youth art', 'youth craft', 'youth music', 'youth dance', 'youth creative', 'child art', 'child craft', 'child music', 'child dance', 'kids art', 'kids craft', 'kids music', 'kids dance'], icon: 'palette' },
       { id: 'youth-leadership', name: 'Youth Leadership', keywords: ['youth leadership', 'youth council'], icon: 'group' },
       { id: 'other-youth', name: 'Other Youth Programs', keywords: ['youth', 'teen'], isFallback: true, icon: 'group' }
     ]
@@ -144,7 +144,7 @@ export const categorizeCourse = (courseTitle: string, ageMin?: string, ageMax?: 
   const matches: Array<{ category: string; subcategory: string; keywordLength: number }> = [];
   const matchedPrograms = new Set<string>(); // Track which programs have been matched
   
-  // Check for age-based categorization first
+  // Check for age-based categorization first (but with lower priority than specific sports)
   if (ageMin) {
     const minAge = parseInt(ageMin);
     
@@ -155,14 +155,14 @@ export const categorizeCourse = (courseTitle: string, ageMin?: string, ageMax?: 
         matches.push({ 
           category: 'specialized', 
           subcategory: 'senior', 
-          keywordLength: 999 // High priority for age-based matching
+          keywordLength: 30 // Lower priority than specific sports keywords
         });
         matchedPrograms.add(matchKey);
       }
     }
   }
   
-  // Check for youth age ranges - categorize as Youth Programs
+  // Check for youth age ranges - categorize as Youth Programs (but only if no specific sport match)
   if (ageMax) {
     const maxAge = ageMax === "None" ? 999 : parseInt(ageMax);
     
@@ -173,7 +173,7 @@ export const categorizeCourse = (courseTitle: string, ageMin?: string, ageMax?: 
         matches.push({ 
           category: 'youth', 
           subcategory: 'other-youth', 
-          keywordLength: 998 // High priority for age-based matching
+          keywordLength: 20 // Lower priority than specific sports keywords
         });
         matchedPrograms.add(matchKey);
       }
@@ -191,7 +191,7 @@ export const categorizeCourse = (courseTitle: string, ageMin?: string, ageMax?: 
         matches.push({ 
           category: 'family', 
           subcategory: 'early-years', 
-          keywordLength: 997 // High priority for age-based matching
+          keywordLength: 10 // Lower priority than specific sports keywords
         });
         matchedPrograms.add(matchKey);
       }
@@ -231,17 +231,30 @@ export const categorizeCourse = (courseTitle: string, ageMin?: string, ageMax?: 
         continue;
       }
       
-      // Special case: exclude walking matches if acqua fitness is present
-      if (subcategory.id === 'walking' && (lowerTitle.includes('acqua fitness') || lowerTitle.includes('aquatic fitness'))) {
-        continue;
-      }
-      
       const matchKey = `${category.id}-${subcategory.id}`;
       if (!matchedPrograms.has(matchKey)) {
+        // Give sports keywords higher priority than age-based categorization
+        let priority = keyword.length;
+        
+        // Boost priority for specific categories to ensure they override age-based categorization
+        if (category.id === 'sports' && ['basketball', 'soccer', 'volleyball', 'badminton', 'pickleball', 'table-tennis', 'hockey', 'multi-sport', 'other-sports'].includes(subcategory.id)) {
+          priority += 100; // Sports get much higher priority
+        } else if (category.id === 'swimming' && ['lane-swim', 'leisure-swim', 'family-swim', 'aquatic-fitness'].includes(subcategory.id)) {
+          priority += 80; // Swimming gets high priority
+        } else if (category.id === 'fitness' && ['yoga', 'pilates', 'cardio', 'zumba', 'strength', 'hiit', 'gentle-fitness', 'walking', 'other-fitness'].includes(subcategory.id)) {
+          priority += 70; // Fitness gets high priority
+        } else if (category.id === 'skating' && ['hockey', 'leisure-skate', 'figure-skating'].includes(subcategory.id)) {
+          priority += 60; // Skating gets high priority
+        } else if (category.id === 'arts-crafts' && ['music', 'dance', 'crafts', 'creative-writing', 'visual-arts', 'other-arts'].includes(subcategory.id)) {
+          priority += 50; // Skating gets high priority
+        } else if (category.id === 'games' && ['club', 'board-games', 'card-games', 'billiards', 'darts', 'video-games', 'bingo', 'other-games'].includes(subcategory.id)) {
+          priority += 40; // Skating gets high priority
+        }
+        
         matches.push({ 
           category: category.id, 
           subcategory: subcategory.id, 
-          keywordLength: keyword.length 
+          keywordLength: priority
         });
         matchedPrograms.add(matchKey);
       }
@@ -294,11 +307,11 @@ export const categorizeCourse = (courseTitle: string, ageMin?: string, ageMax?: 
     return [];
   }
   
+  // Sort matches by priority (highest first) to ensure the best match is used for the icon
+  matches.sort((a, b) => b.keywordLength - a.keywordLength);
+  
   // Return matches without the keywordLength property
-  return matches.map(match => ({ 
-    category: match.category, 
-    subcategory: match.subcategory 
-  }));
+  return matches.map(match => ({ category: match.category, subcategory: match.subcategory }));
 };
 
 // Function to check if a course title matches a specific category/subcategory
