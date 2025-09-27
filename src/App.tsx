@@ -621,14 +621,20 @@ function App() {
         {/* Header */}
         <header className="flex items-center justify-between whitespace-nowrap border-b border-slate-200/80 bg-white px-4 sm:px-6 py-3">
           <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity hover:text-black">
-            <div className="h-8 w-24 text-[#13a4ec]">
+            <div className="h-8 w-24 text-[#13a4ec] flex-shrink-0">
               <img 
                 src="drop-in-rec-logo.svg" 
                 alt="Toronto Drop-in Recreation Finder Logo" 
                 className="h-full w-full object-contain"
               />
             </div>
-            <h2 className="text-lg font-bold">Toronto Drop-in Recreation Finder</h2>
+            <h2 className="text-lg font-bold leading-tight">
+              <span className="hidden sm:inline">Toronto Drop-in Recreation Finder</span>
+              <span className="sm:hidden">
+                Toronto Drop-in<br />
+                Recreation Finder
+              </span>
+            </h2>
           </a>
           <button 
             className="flex items-center justify-center h-10 w-10 rounded-full hover:bg-slate-100 transition-colors"
