@@ -116,15 +116,18 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
           const hasResultsForLocation = locationHasResults ? locationHasResults(location.name) : false;
           const isInSelectedLocations = selectedLocations.includes(location.name);
           
+          // Check if mobile screen (less than 10240px)
+          const isMobile = window.innerWidth < 1024;
+          
           let color, size;
           if (isInSelectedLocations && !hasResultsForLocation) {
             // Selected location with no results - darker gray and larger
             color = 'rgb(128, 128, 128)';
-            size = '32px';
+            size = isMobile ? '22px' : '26px';
           } else {
             // Selected location with results or not in selected locations - blue
             color = 'rgb(20, 161, 255)';
-            size = '30px';
+            size = isMobile ? '22px' : '26px';
           }
           
           markerElement.style.cssText = `
@@ -141,9 +144,12 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
           // Selected location - light blue if has results for this specific location, gray if no results
           const hasResultsForLocation = locationHasResults ? locationHasResults(location.name) : false;
           const color = hasResultsForLocation ? 'rgb(149, 214, 247)' : 'rgb(180, 180, 180)';
+          const isMobile = window.innerWidth < 1024;
+          const size = isMobile ? '16px' : '20px';
+          
           markerElement.style.cssText = `
-            width: 28px;
-            height: 28px;
+            width: ${size};
+            height: ${size};
             background-color: ${color};
             border: 2px solid white;
             border-radius: 50%;
@@ -153,9 +159,12 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
           `;
         } else {
           // Default marker - light blue
+          const isMobile = window.innerWidth < 1024;
+          const size = isMobile ? '16px' : '20px';
+          
           markerElement.style.cssText = `
-            width: 24px;
-            height: 24px;
+            width: ${size};
+            height: ${size};
             background-color:rgb(149, 214, 247);
             border: 2px solid white;
             border-radius: 50%;
@@ -259,14 +268,10 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
 
   if (!mapboxLoaded) {
     return (
-      <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
-        <div className="text-center text-gray-500">
-          <svg className="mx-auto h-12 w-12 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <p className="text-sm">Map unavailable</p>
-          <p className="text-xs text-gray-400 mt-1">MapLibre failed to load</p>
+      <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
+        <div className="text-gray-500">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          Loading map...
         </div>
       </div>
     );

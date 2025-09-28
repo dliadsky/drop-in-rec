@@ -616,7 +616,7 @@ function App() {
   }
 
   return (
-    <div className="relative flex h-screen w-full flex-col bg-[#f6f7f8] text-slate-800">
+    <div className="relative flex h-screen w-full flex-col text-slate-800">
       <div className="flex flex-1 flex-col min-h-0">
         {/* Header */}
         <header className="flex items-center justify-between whitespace-nowrap border-b border-slate-200/80 bg-white px-4 sm:px-6 py-3">
@@ -679,6 +679,7 @@ function App() {
             {/* Map - Above results on mobile, full area on desktop */}
             <div className="relative h-[300px] lg:h-full w-full">
               <LocationMap 
+                key={`${mapLocations.length}-${results.length}-${hasSearched}`}
                 locations={mapLocations} 
                 isLoading={isLoading} 
                 selectedLocation={selectedLocation} 
