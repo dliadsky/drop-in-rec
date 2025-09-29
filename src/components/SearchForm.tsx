@@ -671,14 +671,14 @@ const SearchForm: React.FC<SearchFormProps> = ({
       <div className="space-y-2">
         {/* Category Button - Full Width */}
         <div className="relative">
-          <button className="flex items-center justify-between gap-1.5 rounded-lg bg-[#f6f7f8] px-3 py-2.5 text-sm font-medium hover:bg-slate-200 transition-colors w-full">
+          <button className="flex items-center justify-between gap-1.5 rounded-lg bg-[#f6f7f8] dark:bg-slate-700 px-3 py-2.5 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors w-full text-gray-900 dark:text-slate-200">
             <span className="truncate">
               {filters.category ? filteredCategories.find(c => c.id === filters.category)?.name || 'Category' : 'All Categories'}
             </span>
-            <span className="material-symbols-outlined text-base flex-shrink-0"> expand_more </span>
+            <span className="material-symbols-outlined text-base flex-shrink-0 text-gray-600 dark:text-slate-400"> expand_more </span>
           </button>
           <select
-            className="absolute inset-0 opacity-0 cursor-pointer"
+            className="absolute inset-0 opacity-0 cursor-pointer bg-transparent text-gray-900 dark:text-slate-200"
             value={filters.category}
             onChange={(e) => handleInputChange('category', e.target.value)}
           >
@@ -693,14 +693,14 @@ const SearchForm: React.FC<SearchFormProps> = ({
 
         {/* Subcategory Button - Full Width */}
         <div className="relative">
-          <button className="flex items-center justify-between gap-1.5 rounded-lg bg-[#f6f7f8] px-3 py-2.5 text-sm font-medium hover:bg-slate-200 transition-colors w-full">
+          <button className="flex items-center justify-between gap-1.5 rounded-lg bg-[#f6f7f8] dark:bg-slate-700 px-3 py-2.5 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors w-full text-gray-900 dark:text-slate-200">
             <span className="truncate">
               {filters.subcategory ? filteredSubcategories.find(s => s.id === filters.subcategory)?.name || 'Subcategory' : 'All Subcategories'}
             </span>
-            <span className="material-symbols-outlined text-base flex-shrink-0"> expand_more </span>
+            <span className="material-symbols-outlined text-base flex-shrink-0 text-gray-600 dark:text-slate-400"> expand_more </span>
           </button>
           <select
-            className="absolute inset-0 opacity-0 cursor-pointer"
+            className="absolute inset-0 opacity-0 cursor-pointer bg-transparent text-gray-900 dark:text-slate-200"
             value={filters.subcategory}
             onChange={(e) => handleInputChange('subcategory', e.target.value)}
           >
@@ -831,14 +831,14 @@ const SearchForm: React.FC<SearchFormProps> = ({
         <div className="grid grid-cols-3 gap-2">
           {/* Day Button */}
           <div className="relative">
-            <button className="flex items-center justify-between gap-1.5 rounded-lg bg-[#f6f7f8] px-3 py-2.5 text-sm font-medium hover:bg-slate-200 transition-colors w-full">
+            <button className="flex items-center justify-between gap-1.5 rounded-lg bg-[#f6f7f8] dark:bg-slate-700 px-3 py-2.5 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors w-full text-gray-900 dark:text-slate-200">
               <span className="truncate">
                 {filters.date ? dayOptions.find(d => d.value === filters.date)?.label || 'Day' : 'Day'}
               </span>
-              <span className="material-symbols-outlined text-base flex-shrink-0"> expand_more </span>
+              <span className="material-symbols-outlined text-base flex-shrink-0 text-gray-600 dark:text-slate-400"> expand_more </span>
             </button>
             <select
-              className="absolute inset-0 opacity-0 cursor-pointer"
+              className="absolute inset-0 opacity-0 cursor-pointer bg-transparent text-gray-900 dark:text-slate-200"
               value={filters.date}
               onChange={(e) => handleInputChange('date', e.target.value)}
             >
@@ -852,14 +852,14 @@ const SearchForm: React.FC<SearchFormProps> = ({
 
           {/* Time Button */}
           <div className="relative">
-            <button className="flex items-center justify-between gap-1.5 rounded-lg bg-[#f6f7f8] px-3 py-2.5 text-sm font-medium hover:bg-slate-200 transition-colors w-full">
+            <button className="flex items-center justify-between gap-1.5 rounded-lg bg-[#f6f7f8] dark:bg-slate-700 px-3 py-2.5 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors w-full text-gray-900 dark:text-slate-200">
               <span className="truncate">
                 {filters.time && filters.time !== 'Any Time' ? formatTimeToAMPM(filters.time) : 'Any Time'}
               </span>
-              <span className="material-symbols-outlined text-base flex-shrink-0"> expand_more </span>
+              <span className="material-symbols-outlined text-base flex-shrink-0 text-gray-600 dark:text-slate-400"> expand_more </span>
             </button>
             <select
-              className="absolute inset-0 opacity-0 cursor-pointer"
+              className="absolute inset-0 opacity-0 cursor-pointer bg-transparent text-gray-900 dark:text-slate-200"
               value={filters.time}
               onChange={(e) => handleInputChange('time', e.target.value)}
             >
@@ -873,14 +873,14 @@ const SearchForm: React.FC<SearchFormProps> = ({
 
           {/* Age Button */}
           <div className="relative">
-            <button className="flex items-center justify-between gap-1.5 rounded-lg bg-[#f6f7f8] px-3 py-2.5 text-sm font-medium hover:bg-slate-200 transition-colors w-full">
+            <button className="flex items-center justify-between gap-1.5 rounded-lg bg-[#f6f7f8] dark:bg-slate-700 px-3 py-2.5 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors w-full text-gray-900 dark:text-slate-200">
               <span className="truncate">
                 {filters.age ? (filters.age === '99' ? 'Age 99+' : `Age ${filters.age}`) : 'Any Age'}
               </span>
-              <span className="material-symbols-outlined text-base flex-shrink-0"> expand_more </span>
+              <span className="material-symbols-outlined text-base flex-shrink-0 text-gray-600 dark:text-slate-400"> expand_more </span>
             </button>
             <select
-              className="absolute inset-0 opacity-0 cursor-pointer"
+              className="absolute inset-0 opacity-0 cursor-pointer bg-transparent text-gray-900 dark:text-slate-200"
               value={filters.age}
               onChange={(e) => handleInputChange('age', e.target.value)}
             >

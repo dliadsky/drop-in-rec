@@ -73,7 +73,7 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
         // Detect dark mode preference
         const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
         const mapStyle = isDarkMode 
-          ? 'https://tiles.openfreemap.org/styles/dark-matter' 
+          ? 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json' 
           : 'https://tiles.openfreemap.org/styles/positron';
         
         map.current = new (window as any).maplibregl.Map({

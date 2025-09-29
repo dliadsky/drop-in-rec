@@ -159,12 +159,12 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, hasSe
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold">Results ({results.length})</h3>
           <div className="relative z-10">
-            <button className="flex items-center gap-1.5 rounded-lg bg-[#f6f7f8] px-3 py-1.5 text-sm font-medium hover:bg-slate-200 transition-colors">
+            <button className="flex items-center gap-1.5 rounded-lg bg-[#f6f7f8] dark:bg-slate-700 px-3 py-1.5 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-gray-900 dark:text-slate-200">
               <span className="truncate">
                 {sortOrder === 'alphabetical' ? 'Alphabetical' : 
                  sortOrder === 'earliest' ? 'Open Earliest' : 'Open Latest'}
               </span>
-              <span className="material-symbols-outlined text-base"> expand_more </span>
+              <span className="material-symbols-outlined text-base text-gray-600 dark:text-slate-400"> expand_more </span>
             </button>
             <select
               className="absolute inset-0 opacity-0 cursor-pointer z-10"

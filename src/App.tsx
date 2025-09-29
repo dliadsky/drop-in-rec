@@ -329,9 +329,12 @@ function App() {
     const hasActiveFilters = filters.courseTitle || filters.category || filters.subcategory || 
                             filters.location.length > 0 || filters.age || 
                             (filters.date && filters.date !== getDefaultDate()) || 
-                            (filters.time && filters.time !== getDefaultTime());
+                            (filters.time && filters.time !== 'Any Time');
     
-    if (hasActiveFilters) {
+    // If we have searched (hasSearched is true), only show results and selected locations
+    // If we haven't searched yet, show all locations with programs
+    if (hasSearched || hasActiveFilters) {
+      // Only show locations from results and selected locations
       // Add locations from results
       results.forEach(result => {
         addLocationToMap(result.location);
@@ -386,13 +389,13 @@ function App() {
               address: formattedAddress || undefined,
               url: locationURL
             });
-          }
         }
-      });
+      }
+    });
     }
     
     return Array.from(uniqueLocations.values());
-  }, [results, locationCoordsMap, allLocations, allDropIns, locationURLMap, filters.location, filters.courseTitle, filters.category, filters.subcategory, filters.age, filters.date, filters.time]);
+  }, [results, locationCoordsMap, allLocations, allDropIns, locationURLMap, filters.location, filters.courseTitle, filters.category, filters.subcategory, filters.age, filters.date, filters.time, hasSearched]);
 
   // Create a list of location names that should be available in the dropdown
   // Since allDropIns is already filtered to upcoming week, this will only show relevant locations
@@ -616,7 +619,7 @@ function App() {
   }
 
   return (
-    <div className="relative flex h-screen w-full flex-col bg-[#f6f7f8] dark:bg-slate-900 text-slate-800 dark:text-slate-200">
+    <div className="relative flex min-h-screen w-full flex-col bg-[#f6f7f8] dark:bg-slate-900 text-slate-800 dark:text-slate-200">
       <div className="flex flex-1 flex-col min-h-0">
         {/* Header */}
         <header className="flex items-center justify-between whitespace-nowrap border-b border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-800 px-4 sm:px-6 py-3">
