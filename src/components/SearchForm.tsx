@@ -715,9 +715,9 @@ const SearchForm: React.FC<SearchFormProps> = ({
         <div className="space-y-3">
         {/* Program Search Input */}
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"> search </span>
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"> search </span>
           <input 
-            className="w-full rounded-lg bg-[#f6f7f8] py-2.5 pl-10 pr-10 text-sm focus:ring-2 focus:ring-[#13a4ec] focus:border-[#13a4ec] border-transparent" 
+            className="w-full rounded-lg bg-[#f6f7f8] dark:bg-slate-700 py-2.5 pl-10 pr-10 text-sm text-gray-900 dark:text-slate-200 placeholder-gray-500 dark:placeholder-slate-400 focus:ring-2 focus:ring-[#13a4ec] focus:border-[#13a4ec] border-transparent" 
             placeholder="Find a program" 
             type="text"
             value={searchInputs.program}
@@ -728,7 +728,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
           />
           {searchInputs.program && (
             <button 
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400"
               onClick={() => handleClearField('program')}
             >
               <span className="material-symbols-outlined text-xl"> close </span>
@@ -738,13 +738,13 @@ const SearchForm: React.FC<SearchFormProps> = ({
           {/* Program Autocomplete Dropdown */}
           {showProgramDropdown && (filteredProgramOptions.length > 0 || allFilteredPrograms.length > 0) && (
             <div 
-              className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto"
+              className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-auto"
               onScroll={handleProgramDropdownScroll}
             >
               {filteredProgramOptions.map((option, index) => (
                 <div
                   key={index}
-                  className="px-3 py-2 cursor-pointer hover:bg-gray-50 text-sm"
+                  className="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700 text-sm text-gray-900 dark:text-slate-200"
                   onMouseDown={(e) => {
                     e.preventDefault() // Prevent input from losing focus
                     handleOptionSelect('program', option);
@@ -760,9 +760,9 @@ const SearchForm: React.FC<SearchFormProps> = ({
         {/* Location Search Input */}
         <div>
           <div className="relative">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base"> location_on </span>
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-base"> location_on </span>
             <input 
-              className="w-full rounded-lg bg-[#f6f7f8] py-2.5 pl-10 pr-10 text-sm focus:ring-2 focus:ring-[#13a4ec] focus:border-[#13a4ec] border-transparent" 
+              className="w-full rounded-lg bg-[#f6f7f8] dark:bg-slate-700 py-2.5 pl-10 pr-10 text-sm text-gray-900 dark:text-slate-200 placeholder-gray-500 dark:placeholder-slate-400 focus:ring-2 focus:ring-[#13a4ec] focus:border-[#13a4ec] border-transparent" 
               placeholder="Search by location" 
               type="text"
               value={searchInputs.location}
@@ -774,7 +774,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
             />
             {searchInputs.location && (
               <button 
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400"
                 onClick={() => handleClearField('location')}
               >
                 <span className="material-symbols-outlined text-xl"> close </span>
@@ -784,13 +784,13 @@ const SearchForm: React.FC<SearchFormProps> = ({
             {/* Location Autocomplete Dropdown */}
             {showLocationDropdown && (filteredLocationOptions.length > 0 || allFilteredLocations.length > 0) && (
               <div 
-                className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto"
+                className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-auto"
                 onScroll={handleLocationDropdownScroll}
               >
                 {filteredLocationOptions.map((option, index) => (
                   <div
                     key={index}
-                    className="px-3 py-2 cursor-pointer hover:bg-gray-50 text-sm"
+                    className="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700 text-sm text-gray-900 dark:text-slate-200"
                     onMouseDown={(e) => {
                       e.preventDefault() // Prevent input from losing focus
                       handleOptionSelect('location', option);
@@ -908,26 +908,26 @@ const SearchForm: React.FC<SearchFormProps> = ({
           
           {/* Share Popover */}
           {showSharePopover && (
-            <div className="absolute top-full left-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-30 min-w-80">
+            <div className="absolute top-full left-0 mt-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg shadow-lg z-30 min-w-80">
               {/* Caret/Arrow pointing up to the text */}
-              <div className="absolute -top-1 left-10 transform w-2 h-2 bg-white border-l border-t border-gray-300 rotate-45"></div>
+              <div className="absolute -top-1 left-10 transform w-2 h-2 bg-white dark:bg-slate-800 border-l border-t border-gray-300 dark:border-slate-600 rotate-45"></div>
               
               {/* Close button */}
               <button
-                className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+                className="absolute top-2 right-2 text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-300"
                 onClick={() => setShowSharePopover(false)}
               >
                 <span className="material-symbols-outlined text-sm">close</span>
               </button>
               
               <div className="p-4">
-                <h3 className="text-sm font-medium text-gray-900 mb-2">Share this link:</h3>
+                <h3 className="text-sm font-medium text-gray-900 dark:text-slate-200 mb-2">Share this link:</h3>
                 <div className="mb-1">
                   <input
                     type="text"
                     value={generateShareUrl()}
                     readOnly
-                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded-md bg-gray-50 text-gray-700"
+                    className="w-full px-3 py-2 text-xs border border-gray-300 dark:border-slate-600 rounded-md bg-gray-50 dark:bg-slate-700 text-gray-700 dark:text-slate-300"
                   />
                 </div>
                 <button
