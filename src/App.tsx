@@ -776,7 +776,7 @@ function App() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <p className="text-sm text-gray-500 dark:text-slate-400">
-                      Built with 🖤 by <a className="text-[#13a4ec] hover:text-[#13a4ec]/80" href="https://purposeanalytics.ca" target="_blank">Purpose Analytics</a> for the Toronto community. 
+                      Built with 🖤 by <a className="text-[#13a4ec] hover:text-[#13a4ec]/80" href="https://purposeanalytics.ca" target="_blank">Purpose Analytics</a>. 
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
