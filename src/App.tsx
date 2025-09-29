@@ -486,10 +486,10 @@ function App() {
       // Filter by date (if date is provided)
       if (currentFilters.date) {
         if (currentFilters.date === 'this-week') {
-          // For "This week", show results from all days in the next 7 days
+          // For "This week", show results from all days in the next 6 days (7 days total including today)
           const today = new Date();
           const nextWeek = new Date(today);
-          nextWeek.setDate(today.getDate() + 7);
+          nextWeek.setDate(today.getDate() + 6);
           
           const todayStr = today.toISOString().split('T')[0];
           const nextWeekStr = nextWeek.toISOString().split('T')[0];

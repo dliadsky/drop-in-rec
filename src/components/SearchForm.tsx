@@ -556,7 +556,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
     }
   }, [timeOptions, filters.time, filters, onFiltersChange]);
 
-  // Generate day options for the next 7 days
+  // Generate day options for the next 7 days (to match "This Week" logic)
   const generateDayOptions = () => {
     const days = [];
     const today = new Date();
