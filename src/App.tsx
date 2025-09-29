@@ -687,7 +687,7 @@ function App() {
             {/* Map - Above results on mobile, full area on desktop */}
             <div className="relative h-[300px] lg:h-full w-full">
               <LocationMap 
-                key={`${mapLocations.length}-${results.length}-${hasSearched}`}
+                key={results.length === 0 && hasSearched ? `no-results-${Date.now()}` : 'map'}
                 locations={mapLocations} 
                 isLoading={isLoading} 
                 selectedLocation={selectedLocation} 
@@ -776,7 +776,7 @@ function App() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <p className="text-sm text-gray-500 dark:text-slate-400">
-                      Built with 🖤 by <a className="text-[#13a4ec] hover:text-[#13a4ec]/80" href="https://purposeanalytics.ca" target="_blank">Purpose Analytics</a>. 
+                      Built with 🖤 by <a className="text-[#13a4ec] hover:text-[#13a4ec]/80" href="https://purposeanalytics.ca" target="_blank">Purpose Analytics</a>
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
