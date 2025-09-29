@@ -23,18 +23,6 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
   const markers = useRef<Map<string, any>>(new Map());
   const [mapboxLoaded, setMapboxLoaded] = useState(false);
 
-  // Check if map is still responsive
-  const isMapResponsive = () => {
-    if (!map.current) return false;
-    try {
-      // Try to access map properties to see if it's still responsive
-      const center = map.current.getCenter();
-      const zoom = map.current.getZoom();
-      return center && typeof center.lat === 'number' && typeof center.lng === 'number' && typeof zoom === 'number';
-    } catch {
-      return false;
-    }
-  };
 
   // Wait for Mapbox to load
   useEffect(() => {
@@ -54,66 +42,74 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
     checkMapLibre();
   }, []);
 
+  // Initialize map only once
   useEffect(() => {
-    if (!mapContainer.current || !mapboxLoaded) return;
+    if (!mapContainer.current || !mapboxLoaded || map.current) return;
 
-    // Initialize MapLibre or reinitialize if unresponsive
-    if (!map.current || !isMapResponsive()) {
-      // Clean up existing map if it exists
-      if (map.current) {
-        try {
-          map.current.remove();
-        } catch {
-          // Ignore cleanup errors
-        }
-        map.current = null;
-      }
+    try {
+      // Detect dark mode preference
+      const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const mapStyle = isDarkMode 
+        ? 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json' 
+        : 'https://tiles.openfreemap.org/styles/positron';
+      
+      map.current = new (window as any).maplibregl.Map({
+        container: mapContainer.current,
+        style: mapStyle,
+        center: [-79.3832, 43.6532], // Default to Toronto center
+        zoom: 10
+      });
 
-      try {
-        // Detect dark mode preference
-        const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const mapStyle = isDarkMode 
-          ? 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json' 
-          : 'https://tiles.openfreemap.org/styles/positron';
-        
-        map.current = new (window as any).maplibregl.Map({
-          container: mapContainer.current,
-          style: mapStyle,
-          center: [-79.3832, 43.6532], // Default to Toronto center
-          zoom: 10
-        });
-
-        // Add navigation controls
-        map.current.addControl(new (window as any).maplibregl.NavigationControl());
-        
-        // Listen for dark mode changes
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        const handleDarkModeChange = (e: MediaQueryListEvent) => {
+      // Add navigation controls
+      map.current.addControl(new (window as any).maplibregl.NavigationControl());
+      
+      // Force resize after map loads to ensure proper rendering
+      map.current.on('load', () => {
+        setTimeout(() => {
           if (map.current) {
-            const newStyle = e.matches 
-              ? 'https://tiles.openfreemap.org/styles/dark-matter' 
-              : 'https://tiles.openfreemap.org/styles/positron';
-            map.current.setStyle(newStyle);
+            map.current.resize();
           }
-        };
-        
-        mediaQuery.addEventListener('change', handleDarkModeChange);
-        
-        // Store the listener for cleanup
-        (map.current as any)._darkModeListener = { mediaQuery, handleDarkModeChange };
-        
-      } catch (error) {
-        // Silently handle initialization errors
-        return;
-      }
+        }, 100);
+      });
+      
+      // Listen for dark mode changes
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleDarkModeChange = (e: MediaQueryListEvent) => {
+        if (map.current) {
+          const newStyle = e.matches 
+            ? 'https://tiles.openfreemap.org/styles/dark-matter' 
+            : 'https://tiles.openfreemap.org/styles/positron';
+          map.current.setStyle(newStyle);
+        }
+      };
+      
+      mediaQuery.addEventListener('change', handleDarkModeChange);
+      
+      // Store the listener for cleanup
+      (map.current as any)._darkModeListener = { mediaQuery, handleDarkModeChange };
+      
+      // Add simple resize handler
+      const handleResize = () => {
+        if (map.current) {
+          map.current.resize();
+        }
+      };
+      
+      window.addEventListener('resize', handleResize);
+      (map.current as any)._resizeHandler = handleResize;
+      
+    } catch (error) {
+      console.error('Map initialization error:', error);
     }
+  }, [mapboxLoaded]);
+
+  // Update markers and center map when locations change
+  useEffect(() => {
+    if (!map.current || !mapboxLoaded) return;
 
     // Always clear existing markers first
     markers.current.forEach(marker => marker.remove());
     markers.current.clear();
-
-    // Ensure map is still valid
-    if (!map.current || !mapContainer.current) return;
 
     // If no locations, just return without modifying the map
     if (locations.length === 0) {
@@ -230,15 +226,25 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
     });
 
     // Fit map to show all markers
-    if (locations.length > 1) {
+    if (locations.length > 0) {
       try {
-        const bounds = new (window as any).maplibregl.LngLatBounds();
-        locations.forEach(location => {
+        if (locations.length === 1) {
+          // Center on single location
+          const location = locations[0];
           if (location.lat && location.lng) {
-            bounds.extend([location.lng, location.lat]);
+            map.current.setCenter([location.lng, location.lat]);
+            map.current.setZoom(12);
           }
-        });
-        map.current.fitBounds(bounds, { padding: 50 });
+        } else {
+          // Fit bounds for multiple locations
+          const bounds = new (window as any).maplibregl.LngLatBounds();
+          locations.forEach(location => {
+            if (location.lat && location.lng) {
+              bounds.extend([location.lng, location.lat]);
+            }
+          });
+          map.current.fitBounds(bounds, { padding: 50, maxZoom: 15 });
+        }
       } catch (error) {
         // Silently handle bounds fitting errors
       }
@@ -276,6 +282,12 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
         const darkModeListener = (map.current as any)._darkModeListener;
         if (darkModeListener) {
           darkModeListener.mediaQuery.removeEventListener('change', darkModeListener.handleDarkModeChange);
+        }
+        
+        // Remove resize handler
+        const resizeHandler = (map.current as any)._resizeHandler;
+        if (resizeHandler) {
+          window.removeEventListener('resize', resizeHandler);
         }
         
         map.current.remove();
@@ -322,7 +334,7 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
 
 
   return (
-    <div className="w-full h-full min-h-[300px] sm:min-h-0 relative">
+    <div className="w-full h-full min-h-[300px] lg:min-h-0 relative">
       {/* Header positioned absolutely over the map */}
       <div className="absolute top-4 left-4 z-10 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-sm">
         <h3 className="text-base font-semibold text-gray-800 dark:text-slate-200">

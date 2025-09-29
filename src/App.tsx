@@ -619,7 +619,7 @@ function App() {
   }
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col bg-[#f6f7f8] dark:bg-slate-900 text-slate-800 dark:text-slate-200">
+    <div className="relative flex h-screen w-full flex-col bg-[#f6f7f8] dark:bg-slate-900 text-slate-800 dark:text-slate-200" style={{ minHeight: '100vh' }}>
       <div className="flex flex-1 flex-col min-h-0">
         {/* Header */}
         <header className="flex items-center justify-between whitespace-nowrap border-b border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-800 px-4 sm:px-6 py-3">
@@ -682,7 +682,6 @@ function App() {
             {/* Map - Above results on mobile, full area on desktop */}
             <div className="relative h-[300px] lg:h-full w-full">
               <LocationMap 
-                key={`${mapLocations.length}-${results.length}-${hasSearched}`}
                 locations={mapLocations} 
                 isLoading={isLoading} 
                 selectedLocation={selectedLocation} 
