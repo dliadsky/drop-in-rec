@@ -616,11 +616,11 @@ function App() {
   }
 
   return (
-    <div className="relative flex h-screen w-full flex-col text-slate-800">
+    <div className="relative flex h-screen w-full flex-col bg-[#f6f7f8] dark:bg-slate-900 text-slate-800 dark:text-slate-200">
       <div className="flex flex-1 flex-col min-h-0">
         {/* Header */}
-        <header className="flex items-center justify-between whitespace-nowrap border-b border-slate-200/80 bg-white px-4 sm:px-6 py-3">
-          <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity hover:text-black">
+        <header className="flex items-center justify-between whitespace-nowrap border-b border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-800 px-4 sm:px-6 py-3">
+          <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity hover:text-black dark:hover:text-white">
             <div className="h-8 w-24 text-[#13a4ec] flex-shrink-0">
               <img 
                 src="drop-in-rec-logo.svg" 
@@ -628,7 +628,7 @@ function App() {
                 className="h-full w-full object-contain"
               />
             </div>
-            <h2 className="text-lg font-bold leading-tight">
+            <h2 className="text-lg font-bold leading-tight text-slate-800 dark:text-slate-200">
               <span className="hidden sm:inline">Toronto Drop-in Recreation Finder</span>
               <span className="sm:hidden">
                 Toronto Drop-in<br />
@@ -637,10 +637,10 @@ function App() {
             </h2>
           </a>
           <button 
-            className="flex items-center justify-center h-10 w-10 rounded-full hover:bg-slate-100 transition-colors"
+            className="flex items-center justify-center h-10 w-10 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
             onClick={() => setShowAboutModal(true)}
           >
-            <span className="material-symbols-outlined text-slate-500">
+            <span className="material-symbols-outlined text-slate-500 dark:text-slate-400">
               info
             </span>
           </button>
@@ -649,7 +649,7 @@ function App() {
         {/* Main content area - Responsive layout */}
         <div className="flex flex-1 min-h-0 flex-col lg:flex-row">
           {/* Search Form - Full width on mobile, sidebar on desktop */}
-          <aside className="w-full lg:w-[460px] flex-shrink-0 border-r-0 lg:border-r border-slate-200 bg-white flex flex-col min-h-0">
+          <aside className="w-full lg:w-[460px] flex-shrink-0 border-r-0 lg:border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex flex-col min-h-0">
             <SearchForm
               filters={filters}
               onFiltersChange={setFilters}
@@ -710,13 +710,13 @@ function App() {
       
       {/* About Modal */}
       {showAboutModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" data-modal-backdrop>
-          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900">About Toronto Drop-in Recreation Finder</h2>
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" data-modal-backdrop>
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-slate-700">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-200">About Toronto Drop-in Recreation Finder</h2>
               <button
                 onClick={() => setShowAboutModal(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
               >
                 <span className="material-symbols-outlined text-2xl">close</span>
               </button>
@@ -724,8 +724,8 @@ function App() {
             
             <div className="p-6 space-y-6">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">What is this tool?</h3>
-                <p className="text-gray-700 leading-relaxed">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-200 mb-3">What is this tool?</h3>
+                <p className="text-gray-700 dark:text-slate-300 leading-relaxed">
                   The Toronto Drop-in Recreation Finder helps you discover recreational programs and activities 
                   available across the city. Whether you're looking for sports, arts, fitness, or family activities, 
                   this tool connects you with programs that match your interests, schedule, and location.
@@ -733,8 +733,8 @@ function App() {
               </div>
               
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">How to use it</h3>
-                <ul className="text-gray-700 space-y-2">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-200 mb-3">How to use it</h3>
+                <ul className="text-gray-700 dark:text-slate-300 space-y-2">
                   <li className="flex items-start">
                     <span className="material-symbols-outlined text-[#13a4ec] mr-2 mt-0.5 text-sm">search</span>
                     <span><strong>Search by category:</strong> Browse programs by type (Sports, Arts, Fitness, etc.)</span>
@@ -755,8 +755,8 @@ function App() {
               </div>
               
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Data source</h3>
-                <p className="text-gray-700 leading-relaxed">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-200 mb-3">Data source</h3>
+                <p className="text-gray-700 dark:text-slate-300 leading-relaxed">
                   This tool uses <a className="text-[#13a4ec]" href="https://open.toronto.ca/catalogue/?search=recreation&sort=score%20desc" target="_blank">open data</a> from the City of Toronto's drop-in recreation programs and facilities. 
                   It does not include data about the City's registered recreation programming such as lessons and classes.
                   Data are retrieved nightly to ensure accuracy, but last-minute program changes and availability may not be accuractely reflected here. 
@@ -764,10 +764,10 @@ function App() {
                 </p>
               </div>
               
-              <div className="pt-4 border-t border-gray-200">
+              <div className="pt-4 border-t border-gray-200 dark:border-slate-700">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-slate-400">
                       Built with 🖤 by <a className="text-[#13a4ec] hover:text-[#13a4ec]/80" href="https://purposeanalytics.ca" target="_blank">Purpose Analytics</a> for the Toronto community. 
                     </p>
                   </div>
@@ -776,7 +776,7 @@ function App() {
                         href="https://www.linkedin.com/company/purpose-analytics" 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-gray-500 hover:text-[#0077b5] transition-colors"
+                        className="text-gray-500 dark:text-slate-400 hover:text-[#0077b5] transition-colors"
                         title="Purpose Analytics LinkedIn"
                       >
                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -787,7 +787,7 @@ function App() {
                       href="https://github.com/dliadsky/drop-in-rec" 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors"
+                      className="flex items-center gap-2 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300 transition-colors"
                       title="View on GitHub"
                     >
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
