@@ -151,7 +151,7 @@ function App() {
   const [locationAddressMap, setLocationAddressMap] = useState<Map<string, string>>(new Map());
   const [locationCoordsMap, setLocationCoordsMap] = useState<Map<string, { lat: number; lng: number }>>(new Map());
   const [selectedLocation, setSelectedLocation] = useState<string | undefined>(undefined);
-  const [sortOrder, setSortOrder] = useState<'alphabetical' | 'earliest' | 'latest'>('alphabetical');
+  const [sortOrder, setSortOrder] = useState<'alphabetical' | 'earliest' | 'latest' | 'open-longest'>('alphabetical');
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAboutModal, setShowAboutModal] = useState(false);
@@ -336,9 +336,9 @@ function App() {
                             (filters.date && filters.date !== getDefaultDate()) || 
                             (filters.time && filters.time !== 'Any Time');
     
-    // If we have searched (hasSearched is true), only show results and selected locations
-    // If we haven't searched yet, show all locations with programs
-    if (hasSearched || hasActiveFilters) {
+    // If we have active filters, only show results and selected locations
+    // If we have no active filters (including after clearing), show all locations with programs
+    if (hasActiveFilters) {
       // Only show locations from results and selected locations
       // Add locations from results
       results.forEach(result => {
@@ -677,7 +677,7 @@ function App() {
                 onLocationSelect={handleLocationSelect}
                 selectedLocation={selectedLocation}
                 sortOrder={sortOrder}
-                onSortOrderChange={setSortOrder}
+                onSortOrderChange={(sortOrder: 'alphabetical' | 'earliest' | 'latest' | 'open-longest') => setSortOrder(sortOrder)}
               />
             </div>
           </aside>
@@ -687,7 +687,7 @@ function App() {
             {/* Map - Above results on mobile, full area on desktop */}
             <div className="relative h-[300px] lg:h-full w-full">
               <LocationMap 
-                key={results.length === 0 && hasSearched ? `no-results-${Date.now()}` : 'map'}
+                key={results.length === 0 && hasSearched && (filters.courseTitle || filters.category || filters.subcategory || filters.location.length > 0 || filters.age) ? `no-results-${Date.now()}` : 'map'}
                 locations={mapLocations} 
                 isLoading={isLoading} 
                 selectedLocation={selectedLocation} 

@@ -42,6 +42,24 @@ const formatDateForDisplay = (dateString: string): string => {
   });
 };
 
+// Helper function to calculate program duration in minutes
+const calculateDuration = (startTime: string, endTime: string): number => {
+  if (startTime === 'Any Time' || endTime === 'Any Time') return 0;
+  
+  const [startHour, startMinute] = startTime.split(':').map(Number);
+  const [endHour, endMinute] = endTime.split(':').map(Number);
+  
+  const startMinutes = startHour * 60 + startMinute;
+  const endMinutes = endHour * 60 + endMinute;
+  
+  // Handle case where end time is next day (e.g., 23:30 to 01:30)
+  if (endMinutes < startMinutes) {
+    return (24 * 60) - startMinutes + endMinutes;
+  }
+  
+  return endMinutes - startMinutes;
+};
+
 
 interface SearchResultsProps {
   results: SearchResult[];
@@ -49,8 +67,8 @@ interface SearchResultsProps {
   hasSearched: boolean;
   onLocationSelect?: (location: string) => void;
   selectedLocation?: string;
-  sortOrder: 'alphabetical' | 'earliest' | 'latest';
-  onSortOrderChange: (sortOrder: 'alphabetical' | 'earliest' | 'latest') => void;
+  sortOrder: 'alphabetical' | 'earliest' | 'latest' | 'open-longest';
+  onSortOrderChange: (sortOrder: 'alphabetical' | 'earliest' | 'latest' | 'open-longest') => void;
 }
 
 const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, hasSearched, onLocationSelect, selectedLocation, sortOrder, onSortOrderChange }) => {
@@ -89,6 +107,15 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, hasSe
           const latestLocationCompare = a.location.localeCompare(b.location);
           if (latestLocationCompare !== 0) return latestLocationCompare;
           return a.courseTitle.localeCompare(b.courseTitle);
+        case 'open-longest':
+          // Primary: duration (descending), Secondary: start time (earliest), Tertiary: location
+          const durationA = calculateDuration(a.startTime, a.endTime);
+          const durationB = calculateDuration(b.startTime, b.endTime);
+          const durationCompare = durationB - durationA; // Descending order
+          if (durationCompare !== 0) return durationCompare;
+          const openLongestStartTimeCompare = a.startTime.localeCompare(b.startTime);
+          if (openLongestStartTimeCompare !== 0) return openLongestStartTimeCompare;
+          return a.location.localeCompare(b.location);
         default:
           return 0;
       }
@@ -162,18 +189,20 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, hasSe
             <button className="flex items-center gap-1.5 rounded-lg bg-[#f6f7f8] dark:bg-slate-700 px-3 py-1.5 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-gray-900 dark:text-slate-200">
               <span className="truncate">
                 {sortOrder === 'alphabetical' ? 'Alphabetical' : 
-                 sortOrder === 'earliest' ? 'Open Earliest' : 'Open Latest'}
+                 sortOrder === 'earliest' ? 'Open Earliest' : 
+                 sortOrder === 'latest' ? 'Open Latest' : 'Open Longest'}
               </span>
               <span className="material-symbols-outlined text-base text-gray-600 dark:text-slate-400"> expand_more </span>
             </button>
             <select
               className="absolute inset-0 opacity-0 cursor-pointer z-10"
               value={sortOrder}
-              onChange={(e) => onSortOrderChange(e.target.value as 'alphabetical' | 'earliest' | 'latest')}
+              onChange={(e) => onSortOrderChange(e.target.value as 'alphabetical' | 'earliest' | 'latest' | 'open-longest')}
             >
               <option value="alphabetical">Alphabetical</option>
               <option value="earliest">Open Earliest</option>
               <option value="latest">Open Latest</option>
+              <option value="open-longest">Open Longest</option>
             </select>
           </div>
         </div>
