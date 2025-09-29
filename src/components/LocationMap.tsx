@@ -202,10 +202,10 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
           .setPopup(
             new (window as any).maplibregl.Popup().setHTML(`
               <div class="p-2">
-                <h3 class="font-semibold text-base text-slate-800">${location.name}</h3>
-                ${location.address ? `<p class="mt-1 text-sm text-slate-500 whitespace-pre-line">${location.address}</p>` : ''}
+                <h3 class="font-semibold text-base text-slate-800 dark:text-slate-800">${location.name}</h3>
+                ${location.address ? `<p class="mt-1 text-sm text-slate-500 dark:text-slate-500 whitespace-pre-line">${location.address}</p>` : ''}
                 ${location.url ? `
-                  <a class="p-1 mt-4 inline-flex items-center justify-center line-height-1 w-full bg-[#13a4ec]/10 text-gray text-sm font-medium px-4 rounded-lg hover:text-black hover:bg-[#13a4ec]/1 hover:shadow-lg hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#13a4ec] focus:ring-offset-2 transition-all duration-200 ease-in-out" href="${location.url}" target="_blank" rel="noopener noreferrer">
+                  <a class="p-1 mt-4 inline-flex items-center justify-center line-height-1 w-full bg-[#13a4ec]/10 dark:bg-[#13a4ec]/20 text-gray-700 dark:text-gray-700 text-sm font-medium px-4 rounded-lg hover:text-black dark:hover:text-white hover:bg-[#13a4ec]/1 dark:hover:bg-[#13a4ec]/30 hover:shadow-lg hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#13a4ec] focus:ring-offset-2 transition-all duration-200 ease-in-out" href="${location.url}" target="_blank" rel="noopener noreferrer">
                     <span>View on City Website</span>
                     <span class="material-symbols-outlined ml-2 text-base transition-transform duration-200 ease-in-out group-hover:translate-x-1">arrow_right_alt</span>
                   </a>
