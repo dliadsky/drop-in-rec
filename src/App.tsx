@@ -682,6 +682,7 @@ function App() {
             {/* Map - Above results on mobile, full area on desktop */}
             <div className="relative h-[300px] lg:h-full w-full">
               <LocationMap 
+                key={`${mapLocations.length}-${results.length}-${hasSearched}`}
                 locations={mapLocations} 
                 isLoading={isLoading} 
                 selectedLocation={selectedLocation} 
