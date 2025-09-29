@@ -241,9 +241,14 @@ function App() {
     loadData();
   }, []);
 
-  // Trigger initial search when data is loaded
+  // Trigger initial search when data is loaded (but not if URL has parameters)
   useEffect(() => {
     if (allDropIns.length > 0 && !hasSearched) {
+      // Check if there are URL parameters - if so, let SearchForm handle the search
+      const params = new URLSearchParams(window.location.search);
+      if (params.toString()) {
+        return;
+      }
       performSearch();
     }
   }, [allDropIns.length, hasSearched]);

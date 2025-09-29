@@ -299,6 +299,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
     if (urlLoaded) return; // Prevent multiple loads
     
     const params = new URLSearchParams(window.location.search);
+    
     const urlFilters: SearchFilters = {
       category: params.get('category') || '',
       subcategory: params.get('subcategory') || '',
