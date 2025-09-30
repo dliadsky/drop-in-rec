@@ -6,35 +6,18 @@ import { getAllResources, getDayOfWeek, formatTimeForComparison, formatTimeStrin
 import { categorizeCourse, courseMatchesCategory, categories } from './services/categories';
 import { loadGeoJSONData, createLocationURLMap, createLocationCoordsMap } from './services/geojson';
 
-// Helper function to get current date in YYYY-MM-DD format
+// Helper function to get current date in YYYY-MM-DD format (local timezone)
 const getCurrentDate = (): string => {
   const now = new Date();
   const year = now.getFullYear();
   const month = (now.getMonth() + 1).toString().padStart(2, '0');
   const day = now.getDate().toString().padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  const result = `${year}-${month}-${day}`;
+  return result;
 };
 
-// Helper function to get current time rounded to nearest 30 minutes, ensuring it's in the future
-const getCurrentTime = (): string => {
-  const now = new Date();
-  let hour = now.getHours();
-  let minute = now.getMinutes();
-  
-  // Round to nearest 30 minutes, but always round UP to ensure it's in the future
-  if (minute <= 0) {
-    minute = 30;
-  } else if (minute <= 30) {
-    minute = 30;
-  } else {
-    minute = 0;
-    hour = (hour + 1) % 24;
-  }
-  
-  return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-};
 
-// Helper function to get default date - if it's late in the day, default to tomorrow
+// Helper function to get default date - if it's late in the day, default to tomorrow (local timezone)
 const getDefaultDate = (): string => {
   const now = new Date();
   const hour = now.getHours();
@@ -53,18 +36,39 @@ const getDefaultDate = (): string => {
   return getCurrentDate();
 };
 
-// Helper function to get default time - if it's late in the day or early morning, default to "Any Time"
+// Helper function to get default time - return the next closest available time
 const getDefaultTime = (): string => {
   const now = new Date();
   const hour = now.getHours();
+  const minute = now.getMinutes();
   
   // If it's after 10 PM or before 6 AM, default to "Any Time"
   if (hour >= 22 || hour < 6) {
     return 'Any Time';
   }
   
-  // Otherwise, use current time
-  return getCurrentTime();
+  // Find the next closest time slot
+  let nextHour = hour;
+  let nextMinute = minute;
+  
+  // Round to next 30-minute interval
+  if (minute <= 0) {
+    nextMinute = 30;
+  } else if (minute <= 30) {
+    nextMinute = 30;
+  } else {
+    nextMinute = 0;
+    nextHour = (nextHour + 1) % 24;
+  }
+  
+  // If we've gone past 11:30 PM, default to "Any Time"
+  if (nextHour >= 24 || (nextHour === 23 && nextMinute > 30)) {
+    return 'Any Time';
+  }
+  
+  // Format the time
+  const timeString = `${nextHour.toString().padStart(2, '0')}:${nextMinute.toString().padStart(2, '0')}`;
+  return timeString;
 };
 
 
@@ -190,20 +194,29 @@ function App() {
         ]);
         
         // Filter drop-ins to only include programs available in the upcoming week
+        // Use local date to avoid timezone issues
         const today = new Date();
         const nextWeek = new Date(today);
         nextWeek.setDate(today.getDate() + 7);
         
-        const todayStr = today.toISOString().split('T')[0];
-        const nextWeekStr = nextWeek.toISOString().split('T')[0];
+        // Get local date strings without timezone conversion
+        const todayStr = getCurrentDate();
+        const nextWeekYear = nextWeek.getFullYear();
+        const nextWeekMonth = (nextWeek.getMonth() + 1).toString().padStart(2, '0');
+        const nextWeekDay = nextWeek.getDate().toString().padStart(2, '0');
+        const nextWeekStr = `${nextWeekYear}-${nextWeekMonth}-${nextWeekDay}`;
+        
+        console.log('Data filtering - today:', todayStr, 'nextWeek:', nextWeekStr);
         
         const filteredDropIns = dropIns.filter(dropIn => {
           const firstDate = dropIn["First Date"];
           const lastDate = dropIn["Last Date"];
           
-          // Check if the program runs during the next week
+          // Check if the program runs during the next week (including today)
           return (firstDate <= nextWeekStr && lastDate >= todayStr);
         });
+        
+        console.log('Data filtering - total programs before filter:', dropIns.length, 'after filter:', filteredDropIns.length);
         
         // Extract unique course titles and locations from filtered data
         const uniqueCourseTitles = [...new Set(filteredDropIns.map(d => d["Course Title"]).filter(Boolean))].sort();
@@ -255,12 +268,6 @@ function App() {
 
   // Filter course titles based on selected category and subcategory
 
-  const clearSearchResults = () => {
-    setResults([]);
-    setHasSearched(false);
-    setSelectedLocation(undefined);
-    setSortOrder('alphabetical');
-  };
 
   const handleLocationSelect = (location: string) => {
     // Toggle selection: if clicking the same location, deselect it
@@ -336,9 +343,9 @@ function App() {
                             (filters.date && filters.date !== getDefaultDate()) || 
                             (filters.time && filters.time !== 'Any Time');
     
-    // If we have active filters, only show results and selected locations
-    // If we have no active filters (including after clearing), show all locations with programs
-    if (hasActiveFilters) {
+    // If we have results or active filters, only show results and selected locations
+    // If we have no results and no active filters, show all locations with programs
+    if (results.length > 0 || hasActiveFilters) {
       // Only show locations from results and selected locations
       // Add locations from results
       results.forEach(result => {
@@ -421,6 +428,8 @@ function App() {
   const performSearch = async (searchFilters?: SearchFilters) => {
     const currentFilters = searchFilters || filters;
     
+    console.log('performSearch called with filters:', currentFilters);
+    
     // Show all programs by default - only return empty if explicitly requested
     // (This allows the app to show all programs on initial load)
 
@@ -429,6 +438,7 @@ function App() {
 
     try {
       let filteredResults = allDropIns;
+      
 
       // Filter by category/subcategory first
       if (currentFilters.category) {
@@ -491,8 +501,12 @@ function App() {
           const nextWeek = new Date(today);
           nextWeek.setDate(today.getDate() + 6);
           
-          const todayStr = today.toISOString().split('T')[0];
-          const nextWeekStr = nextWeek.toISOString().split('T')[0];
+          // Use local date strings without timezone conversion
+          const todayStr = getCurrentDate();
+          const nextWeekYear = nextWeek.getFullYear();
+          const nextWeekMonth = (nextWeek.getMonth() + 1).toString().padStart(2, '0');
+          const nextWeekDay = nextWeek.getDate().toString().padStart(2, '0');
+          const nextWeekStr = `${nextWeekYear}-${nextWeekMonth}-${nextWeekDay}`;
           
           filteredResults = filteredResults.filter(dropIn => {
             const firstDate = dropIn["First Date"];
@@ -662,7 +676,6 @@ function App() {
               filters={filters}
               onFiltersChange={setFilters}
               onSearch={performSearch}
-              onClearResults={clearSearchResults}
               isLoading={isLoading}
               allDropIns={allDropIns}
               courseTitles={allCourseTitles}

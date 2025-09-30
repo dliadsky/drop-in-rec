@@ -10,24 +10,6 @@ const getCurrentDate = (): string => {
   return `${year}-${month}-${day}`;
 };
 
-// Helper function to get current time rounded to nearest 30 minutes, ensuring it's in the future
-const getCurrentTime = (): string => {
-  const now = new Date();
-  let hour = now.getHours();
-  let minute = now.getMinutes();
-  
-  // Round to nearest 30 minutes, but always round UP to ensure it's in the future
-  if (minute <= 0) {
-    minute = 30;
-  } else if (minute <= 30) {
-    minute = 30;
-  } else {
-    minute = 0;
-    hour = (hour + 1) % 24;
-  }
-  
-  return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-};
 
 // Helper function to get default date - if it's late in the day (after 8 PM), default to tomorrow
 const getDefaultDate = (): string => {
@@ -48,18 +30,39 @@ const getDefaultDate = (): string => {
   return getCurrentDate();
 };
 
-// Helper function to get default time - if it's late in the day or early morning, default to "Any Time"
+// Helper function to get default time - return the next closest available time
 const getDefaultTime = (): string => {
   const now = new Date();
   const hour = now.getHours();
+  const minute = now.getMinutes();
   
   // If it's after 10 PM or before 6 AM, default to "Any Time"
   if (hour >= 22 || hour < 6) {
     return 'Any Time';
   }
   
-  // Otherwise, use current time
-  return getCurrentTime();
+  // Find the next closest time slot
+  let nextHour = hour;
+  let nextMinute = minute;
+  
+  // Round to next 30-minute interval
+  if (minute <= 0) {
+    nextMinute = 30;
+  } else if (minute <= 30) {
+    nextMinute = 30;
+  } else {
+    nextMinute = 0;
+    nextHour = (nextHour + 1) % 24;
+  }
+  
+  // If we've gone past 11:30 PM, default to "Any Time"
+  if (nextHour >= 24 || (nextHour === 23 && nextMinute > 30)) {
+    return 'Any Time';
+  }
+  
+  // Format the time
+  const timeString = `${nextHour.toString().padStart(2, '0')}:${nextMinute.toString().padStart(2, '0')}`;
+  return timeString;
 };
 
 
@@ -77,7 +80,6 @@ interface SearchFormProps {
   filters: SearchFilters;
   onFiltersChange: (filters: SearchFilters) => void;
   onSearch: (searchFilters?: SearchFilters) => void;
-  onClearResults: () => void;
   isLoading: boolean;
   allDropIns: any[]; // Add drop-in data for availability filtering
   courseTitles: string[];
@@ -90,7 +92,6 @@ const SearchForm: React.FC<SearchFormProps> = ({
   filters,
   onFiltersChange,
   onSearch,
-  onClearResults,
   isLoading,
   allDropIns,
   courseTitles,
@@ -361,12 +362,12 @@ const SearchForm: React.FC<SearchFormProps> = ({
   }, [onSearch, filters, searchInputs]);
 
   const handleClearAll = React.useCallback(() => {
-    // Reset all filters to default values
+    // Reset all filters to default values - use today's date, not tomorrow
     const defaultFilters: SearchFilters = {
       courseTitle: '',
       category: '',
       subcategory: '',
-      date: getDefaultDate(),
+      date: getCurrentDate(), // Always use today, not getDefaultDate() which can be tomorrow
       time: getDefaultTime(),
       location: [],
       age: ''
@@ -385,12 +386,10 @@ const SearchForm: React.FC<SearchFormProps> = ({
     setShowProgramDropdown(false);
     setShowLocationDropdown(false);
     
-    // Update the filters
+    // Update the filters and trigger search
     onFiltersChange(defaultFilters);
-    
-    // Clear the search results
-    onClearResults();
-  }, [onFiltersChange, onClearResults]);
+    onSearch(defaultFilters);
+  }, [onFiltersChange, onSearch]);
 
 
   // Pre-compute locations that have programs (memoized separately for performance)
