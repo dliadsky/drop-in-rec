@@ -57,7 +57,8 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
         container: mapContainer.current,
         style: mapStyle,
         center: [-79.3832, 43.6532], // Default to Toronto center
-        zoom: 10
+        zoom: 10,
+        backgroundColor: '#f8f9fa' // Light gray background to prevent black flash
       });
 
       // Add navigation controls
@@ -346,6 +347,7 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
       <div 
         ref={mapContainer} 
         className="w-full h-full rounded-lg overflow-hidden"
+        style={{ backgroundColor: '#f8f9fa' }}
       />
     </div>
   );
