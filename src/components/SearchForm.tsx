@@ -10,13 +10,13 @@ const getCurrentDate = (): string => {
   return `${year}-${month}-${day}`;
 };
 
-// Helper function to get default date - if it's late in the day (after 8 PM), default to tomorrow
+// Helper function to get default date - if it's late in the day, default to tomorrow (local timezone)
 const getDefaultDate = (): string => {
   const now = new Date();
   const hour = now.getHours();
   
-  // If it's after 8 PM, default to tomorrow
-  if (hour >= 20) {
+  // If it's after 11 PM, default to tomorrow
+  if (hour >= 23) {
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
     const year = tomorrow.getFullYear();
@@ -37,8 +37,13 @@ const getDefaultTime = (): string => {
   const hour = now.getHours();
   const minute = now.getMinutes();
   
-  // If it's after 10 PM or before 6 AM, default to "Any Time"
-  if (hour >= 22 || hour < 6) {
+  // If it's after 11 PM, default to 6 AM (earliest time for tomorrow)
+  if (hour >= 23) {
+    return '06:00';
+  }
+  
+  // If it's before 6 AM, default to "Any Time"
+  if (hour < 6) {
     return 'Any Time';
   }
   
@@ -519,8 +524,13 @@ const SearchForm: React.FC<SearchFormProps> = ({
     const todayString = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`; // YYYY-MM-DD format in local timezone
     const isToday = filters.date === todayString;
     
-    for (let hour = 6; hour < 24; hour++) {
+    for (let hour = 6; hour <= 22; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
+        // Stop at 10:30 PM (22:30) - skip 11:00 PM and later
+        if (hour === 22 && minute > 30) {
+          break;
+        }
+        
         // If it's today, skip past times
         if (isToday) {
           // Skip if hour is less than current hour
