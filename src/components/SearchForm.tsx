@@ -10,7 +10,6 @@ const getCurrentDate = (): string => {
   return `${year}-${month}-${day}`;
 };
 
-
 // Helper function to get default date - if it's late in the day (after 8 PM), default to tomorrow
 const getDefaultDate = (): string => {
   const now = new Date();
@@ -29,6 +28,8 @@ const getDefaultDate = (): string => {
   // Otherwise, use today
   return getCurrentDate();
 };
+
+
 
 // Helper function to get default time - return the next closest available time
 const getDefaultTime = (): string => {
@@ -301,18 +302,18 @@ const SearchForm: React.FC<SearchFormProps> = ({
     
     const params = new URLSearchParams(window.location.search);
     
-    const urlFilters: SearchFilters = {
-      category: params.get('category') || '',
-      subcategory: params.get('subcategory') || '',
-      courseTitle: params.get('program') || '',
-      location: params.get('locations') ? params.get('locations')!.split(',') : [],
-      date: params.get('date') || getDefaultDate(),
-      time: params.get('time') || getDefaultTime(),
-      age: params.get('age') || ''
-    };
-    
-    // Only update if there are URL parameters
+    // Only create filters if there are URL parameters
     if (params.toString()) {
+      const urlFilters: SearchFilters = {
+        category: params.get('category') || '',
+        subcategory: params.get('subcategory') || '',
+        courseTitle: params.get('program') || '',
+        location: params.get('locations') ? params.get('locations')!.split(',') : [],
+        date: getDefaultDate(), // Use default date logic (same as initial app load)
+        time: getDefaultTime(), // Use default time logic (same as initial app load)
+        age: params.get('age') || ''
+      };
+      
       onFiltersChange(urlFilters);
       onSearch(urlFilters);
       
