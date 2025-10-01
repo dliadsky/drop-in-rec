@@ -70,7 +70,7 @@ function App() {
                 onLocationSelect={handleLocationSelect}
                 selectedLocation={selectedLocation}
                 sortOrder={sortOrder}
-                onSortOrderChange={(sortOrder: 'alphabetical' | 'earliest' | 'latest' | 'open-longest') => setSortOrder(sortOrder)}
+                onSortOrderChange={(sortOrder: 'location-name' | 'earliest' | 'latest' | 'open-longest') => setSortOrder(sortOrder)}
               />
             </div>
           </aside>
