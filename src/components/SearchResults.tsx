@@ -67,8 +67,8 @@ interface SearchResultsProps {
   hasSearched: boolean;
   onLocationSelect?: (location: string) => void;
   selectedLocation?: string;
-  sortOrder: 'alphabetical' | 'earliest' | 'latest' | 'open-longest';
-  onSortOrderChange: (sortOrder: 'alphabetical' | 'earliest' | 'latest' | 'open-longest') => void;
+  sortOrder: 'location-name' | 'earliest' | 'latest' | 'open-longest';
+  onSortOrderChange: (sortOrder: 'location-name' | 'earliest' | 'latest' | 'open-longest') => void;
 }
 
 const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, hasSearched, onLocationSelect, selectedLocation, sortOrder, onSortOrderChange }) => {
@@ -88,7 +88,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, hasSe
   const sortedResults = React.useMemo(() => {
     const sorted = [...results].sort((a, b) => {
       switch (sortOrder) {
-        case 'alphabetical':
+        case 'location-name':
           // Primary: location, Secondary: program name
           const locationCompare = a.location.localeCompare(b.location);
           if (locationCompare !== 0) return locationCompare;
@@ -185,25 +185,28 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, isLoading, hasSe
       <div className="border-t border-slate-200 px-3 sm:px-4 py-3 flex-shrink-0">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold">Results ({results.length})</h3>
-          <div className="relative z-10">
-            <button className="flex items-center gap-1.5 rounded-lg bg-[#f6f7f8] dark:bg-slate-700 px-3 py-1.5 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-gray-900 dark:text-slate-200">
-              <span className="truncate">
-                {sortOrder === 'alphabetical' ? 'Alphabetical' : 
-                 sortOrder === 'earliest' ? 'Open Earliest' : 
-                 sortOrder === 'latest' ? 'Open Latest' : 'Open Longest'}
-              </span>
-              <span className="material-symbols-outlined text-base text-gray-600 dark:text-slate-400"> expand_more </span>
-            </button>
-            <select
-              className="absolute inset-0 opacity-0 cursor-pointer z-10"
-              value={sortOrder}
-              onChange={(e) => onSortOrderChange(e.target.value as 'alphabetical' | 'earliest' | 'latest' | 'open-longest')}
-            >
-              <option value="alphabetical">Alphabetical</option>
-              <option value="earliest">Open Earliest</option>
-              <option value="latest">Open Latest</option>
-              <option value="open-longest">Open Longest</option>
-            </select>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-slate-600 dark:text-slate-400">Sort by:</span>
+            <div className="relative z-10">
+              <button className="flex items-center gap-1.5 rounded-lg bg-[#f6f7f8] dark:bg-slate-700 px-3 py-1.5 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-gray-900 dark:text-slate-200">
+                <span className="truncate">
+                  {sortOrder === 'location-name' ? 'Location Name' : 
+                   sortOrder === 'earliest' ? 'Open Earliest' : 
+                   sortOrder === 'latest' ? 'Open Latest' : 'Open Longest'}
+                </span>
+                <span className="material-symbols-outlined text-base text-gray-600 dark:text-slate-400"> expand_more </span>
+              </button>
+              <select
+                className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                value={sortOrder}
+                onChange={(e) => onSortOrderChange(e.target.value as 'location-name' | 'earliest' | 'latest' | 'open-longest')}
+              >
+                <option value="location-name">Location Name</option>
+                <option value="earliest">Open Earliest</option>
+                <option value="latest">Open Latest</option>
+                <option value="open-longest">Open Longest</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>

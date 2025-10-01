@@ -152,7 +152,7 @@ export const useSearchLogic = (
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<string | undefined>(undefined);
-  const [sortOrder, setSortOrder] = useState<'alphabetical' | 'earliest' | 'latest' | 'open-longest'>('alphabetical');
+  const [sortOrder, setSortOrder] = useState<'location-name' | 'earliest' | 'latest' | 'open-longest'>('location-name');
 
   // Extract unique locations with coordinates for the map and location list
   const mapLocations = useMemo(() => {

@@ -51,7 +51,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ onAboutClick }) => {
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-200 mb-3">What is this tool?</h3>
             <p className="text-gray-700 dark:text-slate-300 leading-relaxed">
-              The Toronto Drop-in Recreation Finder helps you discover recreational programs and activities 
+              The Toronto Drop-in Recreation Finder helps you discover drop-in recreation programs and activities 
               available across the city. Whether you're looking for sports, arts, fitness, or family activities, 
               this tool connects you with programs that match your interests, schedule, and location.
             </p>
@@ -93,7 +93,10 @@ const AppHeader: React.FC<AppHeaderProps> = ({ onAboutClick }) => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <p className="text-sm text-gray-500 dark:text-slate-400">
-                  Built with 🖤 by <a className="text-[#13a4ec] hover:text-[#13a4ec]/80" href="https://purposeanalytics.ca" target="_blank">Purpose Analytics</a>
+                  Built with <svg className="inline w-5 h-5 align-middle fill-[#a3d5f8]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="heartTitle">
+                      <title id="heartTitle">Heart icon</title>
+                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09 C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5 c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg> by <a className="text-[#13a4ec] hover:text-[#13a4ec]/80" href="https://purposeanalytics.ca" target="_blank">Purpose Analytics</a>
                 </p>
               </div>
               <div className="flex items-center gap-3">
