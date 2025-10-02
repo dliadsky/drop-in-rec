@@ -26,7 +26,7 @@ export const programIconMappings: Array<{ keywords: string[]; icon: string }> = 
   { keywords: ['volleyball'], icon: 'sports_volleyball' },
   { keywords: ['badminton'], icon: 'badminton' },
   { keywords: ['pickleball'], icon: 'pickleball' },
-  { keywords: ['table tennis'], icon: 'padel' },
+  { keywords: ['table tennis'], icon: 'pickleball' },
   { keywords: ['squash'], icon: 'sports_tennis' },
   { keywords: ['hockey', 'shinny'], icon: 'sports_hockey' },
   { keywords: ['cricket'], icon: 'sports_cricket' },
@@ -35,6 +35,9 @@ export const programIconMappings: Array<{ keywords: string[]; icon: string }> = 
   // Swimming & Aquatics
   { keywords: ['swimming', 'swim', 'aquatic fitness'], icon: 'pool' },
   
+  // Skating
+  { keywords: ['skate'], icon: 'ice_skating' },
+
   // Fitness & Wellness
   { keywords: ['yoga'], icon: 'self_improvement' },
   { keywords: ['pilates'], icon: 'self_improvement' },
@@ -50,7 +53,7 @@ export const programIconMappings: Array<{ keywords: string[]; icon: string }> = 
   
   // Games & Recreation
   { keywords: ['archery'], icon: 'target' },
-  { keywords: ['club'], icon: 'groups' },
+  { keywords: ['club', 'zone'], icon: 'groups' },
   { keywords: ['bocce'], icon: 'scatter_plot' },
   { keywords: ['bowling'], icon: 'circle' },
   { keywords: ['bingo'], icon: 'casino' },
@@ -65,6 +68,8 @@ export const programIconMappings: Array<{ keywords: string[]; icon: string }> = 
   { keywords: ['movie'], icon: 'movie' },
   { keywords: ['study time'], icon: 'dictionary' },
   { keywords: ['hair'], icon: 'self_care' },
+  { keywords: ['playground'], icon: 'playground' },
+  { keywords: ['computer'], icon: 'computer' },
   { keywords: ['video game', 'gaming'], icon: 'videogame_asset' }
 ];
 
