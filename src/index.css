@@ -88,3 +88,12 @@ button:focus-visible {
   color: #ffffff;
   background-color: #13a4ec;
 }
+
+/* Ensure hover effects work properly */
+a:hover {
+  transition: color 0.2s ease-in-out;
+}
+
+button:hover {
+  transition: background-color 0.2s ease-in-out;
+}

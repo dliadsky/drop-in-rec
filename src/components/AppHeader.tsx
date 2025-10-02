@@ -104,7 +104,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ onAboutClick }) => {
                     href="https://www.linkedin.com/company/purpose-analytics" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-gray-500 dark:text-slate-400 hover:text-[#0077b5] transition-colors"
+                    className="text-gray-500 dark:text-slate-400 hover:text-[#0077b5] dark:hover:text-[#0077b5] transition-colors"
                     title="Purpose Analytics LinkedIn"
                   >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -115,7 +115,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ onAboutClick }) => {
                   href="https://github.com/dliadsky/drop-in-rec" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300 transition-colors"
+                  className="flex items-center gap-2 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                   title="View on GitHub"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
