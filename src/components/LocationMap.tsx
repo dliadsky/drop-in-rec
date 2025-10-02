@@ -117,6 +117,16 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
       return;
     }
 
+    // Force resize and re-render when locations change from empty to having locations
+    // This ensures the map renders properly after being hidden
+    setTimeout(() => {
+      if (map.current) {
+        map.current.resize();
+        // Force a style refresh to ensure proper rendering
+        map.current.getStyle();
+      }
+    }, 100);
+
     // Add markers for each location
     locations.forEach((location) => {
       try {

@@ -36,9 +36,9 @@ export const getDefaultTime = (): string => {
     return '06:00';
   }
   
-  // If it's before 6 AM, default to "Any Time"
+  // If it's before 6 AM, default to "Any time"
   if (hour < 6) {
-    return 'Any Time';
+    return 'Any time';
   }
   
   // Find the next closest time slot
@@ -55,9 +55,9 @@ export const getDefaultTime = (): string => {
     nextHour = (nextHour + 1) % 24;
   }
   
-  // If we've gone past 11:30 PM, default to "Any Time"
+  // If we've gone past 11:30 PM, default to "Any time"
   if (nextHour >= 24 || (nextHour === 23 && nextMinute > 30)) {
-    return 'Any Time';
+    return 'Any time';
   }
   
   // Format the time
@@ -67,7 +67,7 @@ export const getDefaultTime = (): string => {
 
 // Helper function to convert 24-hour time to 12-hour AM/PM format
 export const formatTimeToAMPM = (time24: string): string => {
-  if (time24 === 'Any Time') return time24;
+  if (time24 === 'Any time') return time24;
   
   const [hours, minutes] = time24.split(':').map(Number);
   const period = hours >= 12 ? 'PM' : 'AM';
@@ -92,7 +92,7 @@ export const formatDateForDisplay = (dateString: string): string => {
 
 // Helper function to calculate program duration in minutes
 export const calculateDuration = (startTime: string, endTime: string): number => {
-  if (startTime === 'Any Time' || endTime === 'Any Time') return 0;
+  if (startTime === 'Any time' || endTime === 'Any time') return 0;
   
   const [startHour, startMinute] = startTime.split(':').map(Number);
   const [endHour, endMinute] = endTime.split(':').map(Number);

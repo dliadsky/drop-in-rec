@@ -39,7 +39,7 @@ export const useTimeOptions = (filters: any, onFiltersChange: (filters: any) => 
     
     // Sort the time strings and add "Any time" at the beginning
     times.sort((a, b) => a.localeCompare(b));
-    return ['Any Time', ...times];
+    return ['Any time', ...times];
   };
 
   const timeOptions = useMemo(() => generateTimeOptions(), [filters.date]);
@@ -48,8 +48,8 @@ export const useTimeOptions = (filters: any, onFiltersChange: (filters: any) => 
   useEffect(() => {
     if (timeOptions.length > 0 && !timeOptions.includes(filters.time)) {
       // Current time is not in the valid options, set to the first available time
-      // But don't change if it's already "Any Time" to avoid duplicates
-      if (filters.time !== 'Any Time') {
+      // But don't change if it's already "Any time" to avoid duplicates
+      if (filters.time !== 'Any time') {
         onFiltersChange({ ...filters, time: timeOptions[0] });
       }
     }

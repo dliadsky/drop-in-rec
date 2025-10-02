@@ -68,7 +68,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
         <div className="relative">
           <button className="flex items-center justify-between gap-1.5 rounded-lg bg-[#f6f7f8] dark:bg-slate-700 px-3 py-2.5 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors w-full text-gray-900 dark:text-slate-200">
             <span className="truncate">
-              {filters.category ? filteredCategories.find(c => c.id === filters.category)?.name || 'Category' : 'All Categories'}
+              {filters.category ? filteredCategories.find(c => c.id === filters.category)?.name || 'Category' : 'All categories'}
             </span>
             <span className="material-symbols-outlined text-base flex-shrink-0 text-gray-600 dark:text-slate-400"> expand_more </span>
           </button>
@@ -77,7 +77,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
             value={filters.category}
             onChange={(e) => handleInputChange('category', e.target.value)}
           >
-            <option value="">All Categories</option>
+            <option value="">All categories</option>
             {filteredCategories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
@@ -90,7 +90,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
         <div className="relative">
           <button className="flex items-center justify-between gap-1.5 rounded-lg bg-[#f6f7f8] dark:bg-slate-700 px-3 py-2.5 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors w-full text-gray-900 dark:text-slate-200">
             <span className="truncate">
-              {filters.subcategory ? filteredSubcategories.find(s => s.id === filters.subcategory)?.name || 'Subcategory' : 'All Subcategories'}
+              {filters.subcategory ? filteredSubcategories.find(s => s.id === filters.subcategory)?.name || 'Subcategory' : 'All subcategories'}
             </span>
             <span className="material-symbols-outlined text-base flex-shrink-0 text-gray-600 dark:text-slate-400"> expand_more </span>
           </button>
@@ -99,7 +99,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
             value={filters.subcategory}
             onChange={(e) => handleInputChange('subcategory', e.target.value)}
           >
-            <option value="">All Subcategories</option>
+            <option value="">All subcategories</option>
             {filteredSubcategories.map((subcategory) => (
               <option key={subcategory.id} value={subcategory.id}>
                 {subcategory.name}
@@ -249,7 +249,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
           <div className="relative">
             <button className="flex items-center justify-between gap-1.5 rounded-lg bg-[#f6f7f8] dark:bg-slate-700 px-3 py-2.5 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors w-full text-gray-900 dark:text-slate-200">
               <span className="truncate">
-                {filters.time && filters.time !== 'Any Time' ? formatTimeToAMPM(filters.time) : 'Any Time'}
+                {filters.time && filters.time !== 'Any time' ? formatTimeToAMPM(filters.time) : 'Any time'}
               </span>
               <span className="material-symbols-outlined text-base flex-shrink-0 text-gray-600 dark:text-slate-400"> expand_more </span>
             </button>
@@ -270,7 +270,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
           <div className="relative">
             <button className="flex items-center justify-between gap-1.5 rounded-lg bg-[#f6f7f8] dark:bg-slate-700 px-3 py-2.5 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors w-full text-gray-900 dark:text-slate-200">
               <span className="truncate">
-                {filters.age ? (filters.age === '99' ? 'Age 99+' : `Age ${filters.age}`) : 'Any Age'}
+                {filters.age ? (filters.age === '99' ? 'Age 99+' : `Age ${filters.age}`) : 'Any age'}
               </span>
               <span className="material-symbols-outlined text-base flex-shrink-0 text-gray-600 dark:text-slate-400"> expand_more </span>
             </button>
@@ -279,7 +279,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
               value={filters.age}
               onChange={(e) => handleInputChange('age', e.target.value)}
             >
-              <option value="">Any Age</option>
+              <option value="">Any age</option>
               {Array.from({ length: 100 }, (_, i) => (
                 <option key={i} value={i.toString()}>
                   {i === 99 ? '99+' : i.toString()}
@@ -316,7 +316,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
               </button>
               
               <div className="p-4">
-                <h3 className="text-sm font-medium text-gray-900 dark:text-slate-200 mb-2">Share this link:</h3>
+                <h3 className="text-sm font-medium text-gray-900 dark:text-slate-200 mb-2">Share this view:</h3>
                 <div className="mb-1">
                   <input
                     type="text"

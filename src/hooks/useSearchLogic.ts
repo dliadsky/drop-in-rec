@@ -102,9 +102,9 @@ const getDefaultTime = (): string => {
     return '06:00';
   }
   
-  // If it's before 6 AM, default to "Any Time"
+  // If it's before 6 AM, default to "Any time"
   if (hour < 6) {
-    return 'Any Time';
+    return 'Any time';
   }
   
   // Find the next closest time slot
@@ -121,9 +121,9 @@ const getDefaultTime = (): string => {
     nextHour = (nextHour + 1) % 24;
   }
   
-  // If we've gone past 11:30 PM, default to "Any Time"
+  // If we've gone past 11:30 PM, default to "Any time"
   if (nextHour >= 24 || (nextHour === 23 && nextMinute > 30)) {
-    return 'Any Time';
+    return 'Any time';
   }
   
   // Format the time
@@ -217,11 +217,9 @@ export const useSearchLogic = (
     const hasActiveFilters = filters.courseTitle || filters.category || filters.subcategory || 
                             filters.location.length > 0 || filters.age || 
                             (filters.date && filters.date !== getDefaultDate()) || 
-                            (filters.time && filters.time !== 'Any Time');
+                            (filters.time && filters.time !== 'Any time');
     
-    // If we have results or active filters, only show results and selected locations
-    // If we have no results and no active filters, show all locations with programs
-    if (results.length > 0 || hasActiveFilters) {
+    if (results.length > 0) {
       // Only show locations from results and selected locations
       // Add locations from results
       results.forEach(result => {
@@ -232,8 +230,12 @@ export const useSearchLogic = (
       filters.location.forEach(selectedLocationName => {
         addLocationToMap(selectedLocationName);
       });
+    } else if (hasActiveFilters) {
+      // No results but have active filters - return empty array to hide map
+      // This will show the "no results" message instead of the map
+      return [];
     } else {
-      // No active filters - show all locations that have programs in the upcoming week
+      // No results and no active filters - show all locations that have programs in the upcoming week
       const locationsWithPrograms = new Set<number>();
       allDropIns.forEach(dropIn => {
         locationsWithPrograms.add(dropIn["Location ID"]);
@@ -392,8 +394,8 @@ export const useSearchLogic = (
         }
       }
 
-      // Filter by time (if time is provided and not "Any Time")
-      if (currentFilters.time && currentFilters.time !== 'Any Time') {
+      // Filter by time (if time is provided and not "Any time")
+      if (currentFilters.time && currentFilters.time !== 'Any time') {
         const targetTime = formatTimeStringForComparison(currentFilters.time);
         filteredResults = filteredResults.filter(dropIn => {
           const startTime = formatTimeForComparison(dropIn["Start Hour"], dropIn["Start Minute"]);
