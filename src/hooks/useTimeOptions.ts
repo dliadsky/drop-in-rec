@@ -13,10 +13,10 @@ export const useTimeOptions = (filters: any, onFiltersChange: (filters: any) => 
     const todayString = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`; // YYYY-MM-DD format in local timezone
     const isToday = filters.date === todayString;
     
-    for (let hour = 6; hour <= 22; hour++) {
+    for (let hour = 6; hour <= 21; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
         // Stop at 10:30 PM (22:30) - skip 11:00 PM and later
-        if (hour === 22 && minute > 30) {
+        if (hour === 21 && minute > 0) {
           break;
         }
         

@@ -78,8 +78,8 @@ const getDefaultDate = (): string => {
   const now = new Date();
   const hour = now.getHours();
   
-  // If it's after 11 PM, default to tomorrow
-  if (hour >= 23) {
+  // If it's after 10 PM, default to tomorrow
+  if (hour >= 22) {
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
     const year = tomorrow.getFullYear();
@@ -97,9 +97,9 @@ const getDefaultTime = (): string => {
   const hour = now.getHours();
   const minute = now.getMinutes();
   
-  // If it's after 11 PM, default to 6 AM (earliest time for tomorrow)
-  if (hour >= 23) {
-    return '06:00';
+  // If it's after 10 PM, default to "Any time" (for tomorrow)
+  if (hour >= 22) {
+    return 'Any time';
   }
   
   // If it's before 6 AM, default to "Any time"
@@ -285,7 +285,7 @@ export const useSearchLogic = (
     }
     
     return Array.from(uniqueLocations.values());
-  }, [results, allLocations, allDropIns, locationURLMap, filters.location, filters.courseTitle, filters.category, filters.subcategory, filters.age, filters.date, filters.time, hasSearched]);
+  }, [results, allLocations, allDropIns, locationURLMap, filters.location, hasSearched]);
 
   // Create a list of location names that should be available in the dropdown
   const availableLocationNames = useMemo(() => {
@@ -310,6 +310,7 @@ export const useSearchLogic = (
     try {
       let filteredResults = allDropIns;
       
+      
       // Filter by category/subcategory first
       if (currentFilters.category) {
         // Use the new courseMatchesCategory function with age filtering
@@ -333,11 +334,11 @@ export const useSearchLogic = (
         );
         
         if (parentCategory) {
-        filteredResults = filteredResults.filter(dropIn => {
+          filteredResults = filteredResults.filter(dropIn => {
             const courseTitle = dropIn["Course Title"];
             if (!courseTitle) return false;
             return courseMatchesCategory(courseTitle, parentCategory.id, currentFilters.subcategory, dropIn["Age Min"], dropIn["Age Max"]);
-        });
+          });
         }
       }
 

@@ -24,6 +24,7 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
   const [mapboxLoaded, setMapboxLoaded] = useState(false);
 
 
+
   // Wait for Mapbox to load
   useEffect(() => {
     let attempts = 0;
@@ -108,14 +109,16 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
   useEffect(() => {
     if (!map.current || !mapboxLoaded) return;
 
+    // If no locations, clear markers and return
+    if (locations.length === 0) {
+      markers.current.forEach(marker => marker.remove());
+      markers.current.clear();
+      return;
+    }
+
     // Always clear existing markers first
     markers.current.forEach(marker => marker.remove());
     markers.current.clear();
-
-    // If no locations, just return without modifying the map
-    if (locations.length === 0) {
-      return;
-    }
 
     // Force resize and re-render when locations change from empty to having locations
     // This ensures the map renders properly after being hidden
@@ -261,7 +264,7 @@ const LocationMap: React.FC<LocationMapProps> = ({ locations, isLoading, selecte
       }
     }
 
-  }, [locations, mapboxLoaded, selectedLocation]);
+  }, [locations, mapboxLoaded, selectedLocation, selectedLocations, locationHasResults]);
 
   // Handle popup opening when location is selected
   useEffect(() => {

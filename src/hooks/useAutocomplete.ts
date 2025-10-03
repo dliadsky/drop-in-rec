@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { courseMatchesCategory } from '../services/categories';
+import { courseMatchesCategory, categories } from '../services/categories';
 
 export const useAutocomplete = (
   allDropIns: any[],
@@ -53,26 +53,43 @@ export const useAutocomplete = (
 
   // Pre-filter by category/subcategory (expensive operation, memoized separately)
   const categoryFilteredPrograms = useMemo(() => {
-    if (!filters.category) {
-      return courseTitles;
+    if (filters.category) {
+      if (filters.subcategory) {
+        // Both category and subcategory specified
+        return allDropIns
+          .filter(dropIn => {
+            const courseTitle = dropIn["Course Title"];
+            if (!courseTitle) return false;
+            return courseMatchesCategory(courseTitle, filters.category, filters.subcategory, dropIn["Age Min"], dropIn["Age Max"]);
+          })
+          .map(dropIn => dropIn["Course Title"])
+          .filter((title, index, self) => self.indexOf(title) === index); // Remove duplicates
+      } else {
+        // Only category specified
+        return courseTitles.filter(title => 
+          courseMatchesCategory(title, filters.category)
+        );
+      }
+    } else if (filters.subcategory) {
+      // Only subcategory specified - find parent category and filter
+      const parentCategory = categories.find(cat => 
+        cat.subcategories.some(sub => sub.id === filters.subcategory)
+      );
+      
+      if (parentCategory) {
+        return allDropIns
+          .filter(dropIn => {
+            const courseTitle = dropIn["Course Title"];
+            if (!courseTitle) return false;
+            return courseMatchesCategory(courseTitle, parentCategory.id, filters.subcategory, dropIn["Age Min"], dropIn["Age Max"]);
+          })
+          .map(dropIn => dropIn["Course Title"])
+          .filter((title, index, self) => self.indexOf(title) === index); // Remove duplicates
+      }
     }
     
-    if (filters.subcategory) {
-      // Filter by specific subcategory - need to check against actual drop-in data for age filtering
-      return allDropIns
-        .filter(dropIn => {
-          const courseTitle = dropIn["Course Title"];
-          if (!courseTitle) return false;
-          return courseMatchesCategory(courseTitle, filters.category, filters.subcategory, dropIn["Age Min"], dropIn["Age Max"]);
-        })
-        .map(dropIn => dropIn["Course Title"])
-        .filter((title, index, self) => self.indexOf(title) === index); // Remove duplicates
-    } else {
-      // Filter by category (all subcategories)
-      return courseTitles.filter(title => 
-        courseMatchesCategory(title, filters.category)
-      );
-    }
+    // No category or subcategory filters
+    return courseTitles;
   }, [courseTitles, filters.category, filters.subcategory, allDropIns]);
 
   // Get all filtered programs (without pagination)
