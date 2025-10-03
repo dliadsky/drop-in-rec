@@ -112,7 +112,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ onAboutClick }) => {
                     </svg>
                 </a>
                 <a 
-                  href="https://github.com/dliadsky/drop-in-rec" 
+                  href="https://github.com/purposeanalytics/drop-in-rec" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
